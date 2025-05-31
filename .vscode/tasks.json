@@ -3,11 +3,11 @@
 	"tasks": [
 		{
 			"type": "dotnet",
-			"task": "build ${workspaceFolder}/TestRunner/TestRunner.csproj",
-			"file": "${workspaceFolder}/TestRunner/TestRunner.csproj",
+			"task": "build ${workspaceFolder}/MoonSharpPlayground/MoonSharpPlayground.csproj",
+			"file": "${workspaceFolder}/MoonSharpPlayground/MoonSharpPlayground.csproj",
 			"group": "build",
 			"problemMatcher": [],
-			"label": "build TestRunner"
+			"label": "build MoonSharpPlayground"
 		},
 		{
 			"type": "dotnet",

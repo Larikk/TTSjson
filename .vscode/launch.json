@@ -5,11 +5,11 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Run tests",
+            "name": "Run MoonSharpPlayground",
             "type": "coreclr",
             "request": "launch",
-            "preLaunchTask": "build TestRunner",
-            "program": "${workspaceFolder}/TestRunner/bin/Debug/net8.0/TestRunner.dll",
+            "preLaunchTask": "build MoonSharpPlayground",
+            "program": "${workspaceFolder}/MoonSharpPlayground/bin/Debug/net8.0/MoonSharpPlayground.dll",
             "args": [],
             "cwd": "${workspaceFolder}",
             "stopAtEntry": false,

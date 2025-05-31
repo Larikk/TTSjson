@@ -3,9 +3,8 @@
 
 static void test()
 {
-    var c = char.ConvertFromUtf32(65536);
     string scriptCode = """
-    return string.char(65536)
+    return "Hello World"
     """;
     var res = Script.RunString(scriptCode).String;
     Console.WriteLine(res);
