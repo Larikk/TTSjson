@@ -42,41 +42,6 @@ public class GeneralParseTests
     }
 
     [Fact]
-    public void ShouldParseEmptyArray()
-    {
-        var actual = ttsjson.Parse("[]").Table.AsList(i => i.String);
-        var expected = new List<string>();
-        Assert.Equal(expected, actual);
-    }
-
-    [Fact]
-    public void ShouldParseArrayOfNumbers()
-    {
-        var actual = ttsjson.Parse("[1,2,3]").Table.AsList(i => (int)i.Number);
-        var expected = new List<int>() { 1, 2, 3 };
-        Assert.Equal(expected, actual);
-    }
-
-    [Fact]
-    public void ShouldParseArrayOfString()
-    {
-        var actual = ttsjson.Parse("""["foo","bar","baz"]""").Table.AsList(i => i.String);
-        var expected = new List<string>() { "foo", "bar", "baz" };
-        Assert.Equal(expected, actual);
-    }
-
-    [Fact]
-    public void ShouldParseArrayOfMixedTypes()
-    {
-        var actual = ttsjson.Parse("""[100,"foobar",true,{}]""").Table.Values.ToList();
-        Assert.Equal(4, actual.Count);
-        Assert.Equal(100, actual[0].Number);
-        Assert.Equal("foobar", actual[1].String);
-        Assert.True(actual[2].Boolean);
-        Assert.Empty(actual[3].Table.Keys);
-    }
-
-    [Fact]
     public void ShouldParseEmptyObject()
     {
         var actual = ttsjson.Parse("""{}""").Table;

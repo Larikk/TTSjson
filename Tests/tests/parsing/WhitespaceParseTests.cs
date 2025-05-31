@@ -31,7 +31,7 @@ public class WhitespaceParseTests
         Assert.Equal("bar", actual["foo"]);
         Assert.Equal(5.0, actual["i"]);
         Assert.Equal(false, actual["bool"]);
-        Assert.Equal(["foo", "bar", "baz"], ((Table)actual["items"]).AsList(i => i.String));
+        Assert.Equal(["foo", "bar", "baz"], actual.Get("items").Table.AsList(i => i.String));
     }
 
     [Fact]
@@ -40,4 +40,13 @@ public class WhitespaceParseTests
         var actual = ttsjson.Parse("     \n  \t   \"Foo\"    \n \t   ").String;
         Assert.Equal("Foo", actual);
     }
+
+    [Fact]
+    public void ShouldParseArrayWithWhiteSpaces()
+    {
+        var actual = ttsjson.Parse("[[]  ]").Table;
+        Assert.Equal(1, actual.Length);
+        Assert.Equal(0, actual.Get(1).Table.Length);
+    }
+
 }
