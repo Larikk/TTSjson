@@ -1,6 +1,6 @@
 using MoonSharp.Interpreter;
 
-namespace Tests;
+namespace Tests.tests;
 
 public class PositiveParseTests
 {
@@ -173,13 +173,5 @@ public class PositiveParseTests
     {
         var actual = ttsjson.Parse("\"\xF0\x90\x80\x80\"").String;
         Assert.Equal("�", actual);
-    }
-}
-
-public static class MyExtensions
-{
-    public static List<T> AsList<T>(this Table table, Func<DynValue, T> mapFunc)
-    {
-        return table.Values.Select(mapFunc).ToList();
     }
 }

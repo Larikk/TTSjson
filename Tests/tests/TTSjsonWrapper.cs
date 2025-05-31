@@ -1,6 +1,6 @@
-namespace Tests;
-
 using MoonSharp.Interpreter;
+
+namespace Tests.tests;
 
 public sealed class TTSjsonWrapper
 {
@@ -38,6 +38,5 @@ public sealed class TTSjsonWrapper
         Task<DynValue> task = Task.Run(() => parseFunction.Call(json));
         task.Wait(ct);
         return task.Result;
-
     }
 }
