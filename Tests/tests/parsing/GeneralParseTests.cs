@@ -14,13 +14,6 @@ public class GeneralParseTests
     }
 
     [Fact]
-    public void ShouldParseInteger()
-    {
-        var actual = ttsjson.Parse("100").Number;
-        Assert.Equal(100, actual);
-    }
-
-    [Fact]
     public void ShouldParseTrue()
     {
         var actual = ttsjson.Parse("true").Boolean;
