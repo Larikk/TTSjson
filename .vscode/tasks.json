@@ -44,8 +44,10 @@
 		},
 		{
 			"type": "shell",
-			"label": "Wait for debug server",
-			"command": "sleep 0.5",
-		}
+			"label": "Wait for moonsharp debug server",
+			"hide": true,
+			// Replace with sleep if you don't have python installed
+			"command": "python ${workspaceFolder}/scripts/awaitDebugServer.py",
+		},
 	]
 }

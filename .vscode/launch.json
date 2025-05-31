@@ -24,21 +24,20 @@
             "args": [],
             "cwd": "${workspaceFolder}",
             "stopAtEntry": false,
-            "console": "internalConsole"
+            "console": "internalConsole",
         },
         {
-            "name": "Attach to debugger",
+            "name": "Attach to moonsharp debugger",
             "type": "moonsharp-debug",
             "request": "attach",
-            "preLaunchTask": "Wait for debug server",
             "debugServer": 41912,
-            "HELP": "Please set 'debugServer':41912 (or whatever port you ar connecting to) right after the 'version' field in this json."
+            "preLaunchTask": "Wait for moonsharp debug server"
         }
     ],
     "compounds": [
         {
             "name": "Debug",
-            "configurations": ["Start debug server", "Attach to debugger"],
+            "configurations": ["Start debug server", "Attach to moonsharp debugger"],
             "stopAll": true,
         }
     ]
