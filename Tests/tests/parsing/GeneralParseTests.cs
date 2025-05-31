@@ -1,14 +1,11 @@
 using MoonSharp.Interpreter;
 
-namespace Tests.tests;
+namespace Tests.tests.parsing;
 
-public class PositiveParseTests
+public class GeneralParseTests
 {
-    private static readonly TTSjsonWrapper ttsjson = TTSjsonWrapper.Instance;
+    private static readonly TTSjsonWrapper ttsjson = new();
 
-    // 
-    // Simple Tests
-    //
     [Fact]
     public void ShouldParseString()
     {
@@ -103,75 +100,5 @@ public class PositiveParseTests
         Assert.Equal(5.0, actual["i"]);
         Assert.Equal(false, actual["bool"]);
         Assert.Equal([], ((Table)actual["items"]).Values);
-    }
-
-    //
-    // Whitespace tests
-    //
-    [Fact]
-    public void ShouldIgnoreWhitespaceBetweekTokens()
-    {
-        var json =
-"""   
-
-                  {  
-        "foo"      :  "bar"       ,    
-        
-        "i":5 ,  "bool"       :
-        false
-    ,
-    "items"  :        [   "foo"   ,
-    
-    "bar"     ,
-"baz",
- ]
- 
-             }
-""";
-        var actual = ttsjson.Parse(json).Table;
-        Assert.Equal(4, actual.Keys.ToList().Count);
-        Assert.Equal("bar", actual["foo"]);
-        Assert.Equal(5.0, actual["i"]);
-        Assert.Equal(false, actual["bool"]);
-        Assert.Equal(["foo", "bar", "baz"], ((Table)actual["items"]).AsList(i => i.String));
-    }
-
-    [Fact]
-    public void ShouldIgnoreLeadingAndTrailingWhitespace()
-    {
-        var actual = ttsjson.Parse("     \n  \t   \"Foo\"    \n \t   ").String;
-        Assert.Equal("Foo", actual);
-    }
-
-
-    //
-    // UTF-8 Tests
-    //
-    [Fact]
-    public void ShouldDecodeUnicodeLiteral()
-    {
-        var actual = ttsjson.Parse("\"\\u20AC\"").String;
-        Assert.Equal("€", actual);
-    }
-
-    [Fact]
-    public void ShouldDecodeEuroSign()
-    {
-        var actual = ttsjson.Parse("\"\xE2\x82\xAC\"").String;
-        Assert.Equal("€", actual);
-    }
-
-    [Fact]
-    public void ShouldDecodeHalfWhiteCircle()
-    {
-        var actual = ttsjson.Parse("\"\xEF\xBF\xAE\"").String;
-        Assert.Equal("￮", actual);
-    }
-
-    [Fact]
-    public void ShouldDecodeUnicodeCharactersAboveFFFFasFFFD()
-    {
-        var actual = ttsjson.Parse("\"\xF0\x90\x80\x80\"").String;
-        Assert.Equal("�", actual);
     }
 }

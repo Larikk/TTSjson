@@ -7,19 +7,7 @@ public sealed class TTSjsonWrapper
 
     private readonly Closure parseFunction;
 
-    private static readonly TTSjsonWrapper instance = new();
-
-    static TTSjsonWrapper() { }
-
-    public static TTSjsonWrapper Instance
-    {
-        get
-        {
-            return instance;
-        }
-    }
-
-    private TTSjsonWrapper()
+    public TTSjsonWrapper()
     {
         // Tests always use the location of the dll as working dir
         var workingDirectory = new DirectoryInfo(Environment.CurrentDirectory);
