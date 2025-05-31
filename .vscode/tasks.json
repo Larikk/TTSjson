@@ -29,7 +29,10 @@
 			"label": "test",
 			"command": "dotnet",
 			"type": "shell",
-			"group": "test",
+			"group": {
+				"kind": "test",
+				"isDefault": true
+			},
 			"args": [
 				"test",
 				"${workspaceFolder}/Tests/Tests.csproj"
@@ -46,8 +49,7 @@
 			"type": "shell",
 			"label": "Wait for moonsharp debug server",
 			"hide": true,
-			// Replace with sleep if you don't have python installed
-			"command": "python ${workspaceFolder}/scripts/awaitDebugServer.py",
-		},
+			"command": "python ${workspaceFolder}/scripts/awaitDebugServer.py"
+		}
 	]
 }
