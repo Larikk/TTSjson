@@ -6,19 +6,19 @@ class DebugServer
     public static void DebugJsonString(string str)
     {
         int port = 41912;
-        MoonSharpVsCodeDebugServer server = new(port);
-
+        var server = new MoonSharpVsCodeDebugServer(port);
+        
         string scriptPath = Directory.GetCurrentDirectory() + "/TTSjson.lua";
         string scriptCode = File.ReadAllText(scriptPath);
-        Script script = new();
+        var script = new Script();
 
         DynValue executionResult = script.DoString(scriptCode, null, scriptPath);
         server.AttachToScript(script, "TTSjson");
         var parseFunction = executionResult.Table.Get("parse").Function;
 
         server.Start();
+        Thread.Sleep(2000); // Give debugger time to attach
 
-        Thread.Sleep(2000); // Give Debug Client enough time to attach before starting the parsing
         DynValue res = parseFunction.Call(str);
         Console.WriteLine(res);
     }
