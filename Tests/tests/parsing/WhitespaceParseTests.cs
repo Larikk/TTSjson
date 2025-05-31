@@ -7,7 +7,7 @@ public class WhitespaceParseTests
     private static readonly TTSjsonWrapper ttsjson = new();
 
     [Fact]
-    public void ShouldIgnoreWhitespaceBetweekTokens()
+    public void ShouldIgnoreWhitespaceBetweenTokens()
     {
         var json =
 """   
