@@ -1,4 +1,4 @@
-namespace Tests.tests.parsing;
+namespace Tests.Tests.Parsing.Positive;
 
 public class StringParseTests
 {

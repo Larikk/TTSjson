@@ -1,6 +1,6 @@
 using MoonSharp.Interpreter;
 
-namespace Tests.tests;
+namespace Tests.Tests;
 
 public sealed class TTSjsonWrapper
 {
