@@ -21,7 +21,7 @@ public class WhitespaceParseTests
     "items"  :        [   "foo"   ,
     
     "bar"     ,
-"baz",
+"baz"
  ]
  
              }
