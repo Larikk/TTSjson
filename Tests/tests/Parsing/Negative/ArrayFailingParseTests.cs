@@ -2,7 +2,7 @@ using MoonSharp.Interpreter;
 
 namespace Tests.Tests.Parsing.Negative;
 
-public class ArrayParseTests
+public class ArrayFailingParseTests
 {
     private static readonly TTSjsonWrapper ttsjson = new();
 
