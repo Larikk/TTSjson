@@ -63,10 +63,6 @@ local function parseNumber(ctx)
         ctx.advanceChar()
     end
 
-    if (tbl[1] == "-" and tbl[2] == 0) or tbl[1] == 0 then
-        error("first digit is not allowed to be zero")
-    end
-
     local s = table.concat(tbl)
     local n = tonumber(s)
 
