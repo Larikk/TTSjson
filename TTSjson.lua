@@ -242,11 +242,20 @@ parseArray = function(ctx)
     ctx.advanceChar()
     ctx.skipWhiteSpace()
 
+    if ctx.currentChar == "]" then
+        ctx.advanceChar()
+        ctx.skipWhiteSpace()
+        return {}
+    end
+
     local tbl = {}
     local tblPos = 1
 
     while true do
-        if ctx.currentChar == "," and tblPos > 1 then
+        local value = parseValue(ctx)
+        tbl[tblPos] = value
+        tblPos = tblPos + 1
+        if ctx.currentChar == "," then
             ctx.advanceChar()
             ctx.skipWhiteSpace()
         elseif ctx.currentChar == "]" then
@@ -254,9 +263,7 @@ parseArray = function(ctx)
             ctx.skipWhiteSpace()
             return tbl
         else
-            local value = parseValue(ctx)
-            tbl[tblPos] = value
-            tblPos = tblPos + 1
+            error("expected ',' or ']' after array value but got " .. ctx.currentChar)
         end
     end
 
