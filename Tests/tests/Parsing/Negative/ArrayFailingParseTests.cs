@@ -1,5 +1,3 @@
-using MoonSharp.Interpreter;
-
 namespace Tests.Tests.Parsing.Negative;
 
 public class ArrayFailingParseTests
