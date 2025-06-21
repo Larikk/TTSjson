@@ -24,7 +24,21 @@ public sealed class TTSjsonWrapper
         // Wrap parsing in task and abort if parsing takes too long as a protection against endless loop in the TTSjson lib
         var ct = new CancellationTokenSource(TimeSpan.FromMilliseconds(200)).Token;
         Task<DynValue> task = Task.Run(() => parseFunction.Call(json));
-        task.Wait(ct);
+        try
+        {
+            task.Wait(ct);
+        }
+        catch (AggregateException e)
+        {
+            throw e.InnerException ?? e;
+        }
         return task.Result;
     }
+
+    public void AssertFailingParse(string json, string expectedErrorMessage)
+    {
+        var exception = Assert.Throws<ScriptRuntimeException>(() => Parse(json));
+        Assert.Equal(expectedErrorMessage, exception.Message);
+    }
+
 }
