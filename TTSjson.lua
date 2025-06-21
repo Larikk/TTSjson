@@ -68,7 +68,10 @@ local function parseNumber(ctx)
     end
 
     local s = table.concat(tbl)
-    return tonumber(s)
+    local n = tonumber(s)
+
+    if n == nil then error("not a number: " .. s) end
+    return n
 end
 
 local function parseUnicodeSeq(ctx)
