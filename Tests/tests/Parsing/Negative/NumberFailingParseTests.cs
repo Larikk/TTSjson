@@ -77,4 +77,51 @@ public class NumberFailingParseTests
     }
 
 
+    [Fact]
+    public void ShouldFailOnHexDigits()
+    {
+        var json = "0x1";
+        var expectedErrorMessage = "json has data past the parsed value";
+        ttsjson.AssertFailingParse(json, expectedErrorMessage);
+    }
+
+
+    [Fact]
+    public void ShouldFailOnInvalidCharactersInNumber()
+    {
+        var json = "-123.456foo";
+        var expectedErrorMessage = "json has data past the parsed value";
+        ttsjson.AssertFailingParse(json, expectedErrorMessage);
+    }
+
+
+    [Fact]
+    public void ShouldFailOnSpaceAfterMinus()
+    {
+        var json = "- 1";
+        var expectedErrorMessage = "not a number: -";
+        ttsjson.AssertFailingParse(json, expectedErrorMessage);
+    }
+
+
+    /* Invalid json but Lua can parse that
+    [Fact]
+    public void ShouldFailOnNegativeRealNumberWithoutIntPart()
+    {
+        var json = "-.123";
+        var expectedErrorMessage = "";
+        ttsjson.AssertFailingParse(json, expectedErrorMessage);
+    }
+    */
+
+    /* Invalid json but Lua can parse that
+    [Fact]
+    public void ShouldFailOnRealNumberWithoutFractionalPart()
+    {
+        var json = "1.";
+        var expectedErrorMessage = "";
+        ttsjson.AssertFailingParse(json, expectedErrorMessage);
+    }
+    */
+
 }
