@@ -76,7 +76,6 @@ public class NumberFailingParseTests
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
-
     [Fact]
     public void ShouldFailOnHexDigits()
     {
@@ -84,7 +83,6 @@ public class NumberFailingParseTests
         var expectedErrorMessage = "json has data past the parsed value";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
-
 
     [Fact]
     public void ShouldFailOnInvalidCharactersInNumber()
@@ -94,7 +92,6 @@ public class NumberFailingParseTests
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
-
     [Fact]
     public void ShouldFailOnSpaceAfterMinus()
     {
@@ -102,7 +99,6 @@ public class NumberFailingParseTests
         var expectedErrorMessage = "not a number: -";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
-
 
     /* Invalid json but Lua can parse that
     [Fact]
