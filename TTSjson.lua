@@ -209,11 +209,23 @@ parseObject = function(ctx)
     ctx.advanceChar()
     ctx.skipWhiteSpace()
 
+    if ctx.currentChar == "}" then
+        ctx.advanceChar()
+        ctx.skipWhiteSpace()
+        return {}
+    end
+
     local obj = {}
-    local firstKeyRead = false
 
     while true do
-        if ctx.currentChar == "," and firstKeyRead then
+        local key = parseString(ctx)
+        ctx.skipWhiteSpace()
+        if ctx.currentChar ~= ":" then error("expected :, got " .. ctx.currentChar) end
+        ctx.advanceChar()
+        ctx.skipWhiteSpace()
+        local value = parseValue(ctx)
+        obj[key] = value
+        if ctx.currentChar == "," then
             ctx.advanceChar()
             ctx.skipWhiteSpace()
         elseif ctx.currentChar == "}" then
@@ -221,15 +233,7 @@ parseObject = function(ctx)
             ctx.skipWhiteSpace()
             return obj
         else
-            local key = parseString(ctx)
-            ctx.skipWhiteSpace()
-            if ctx.currentChar ~= ":" then error("expected :, got " .. ctx.currentChar) end
-            ctx.advanceChar()
-            ctx.skipWhiteSpace()
-            local value = parseValue(ctx)
-            ctx.skipWhiteSpace()
-            obj[key] = value
-            firstKeyRead = true
+            error("expected ',' or '}' after object value but got " .. ctx.currentChar)
         end
     end
 
