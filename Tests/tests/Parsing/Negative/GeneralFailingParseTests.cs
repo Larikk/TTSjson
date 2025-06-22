@@ -20,7 +20,6 @@ public class GeneralFailingParseTests
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
-
     [Fact]
     public void ShouldFailOnIncompleteTrue()
     {
@@ -29,12 +28,35 @@ public class GeneralFailingParseTests
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
-
     [Fact]
     public void ShouldFailOnNonValue()
     {
         var json = "falsey";
         var expectedErrorMessage = "json has data past the parsed value";
+        ttsjson.AssertFailingParse(json, expectedErrorMessage);
+    }
+
+    [Fact]
+    public void ShouldFailOnEmptyString()
+    {
+        var json = "";
+        var expectedErrorMessage = "expected start of a value, got ";
+        ttsjson.AssertFailingParse(json, expectedErrorMessage);
+    }
+
+    [Fact]
+    public void ShouldFailOnJustSpace()
+    {
+        var json = " ";
+        var expectedErrorMessage = "expected start of a value, got ";
+        ttsjson.AssertFailingParse(json, expectedErrorMessage);
+    }
+
+    [Fact]
+    public void ShouldFailOnJustNewLine()
+    {
+        var json = "\n";
+        var expectedErrorMessage = "expected start of a value, got ";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
