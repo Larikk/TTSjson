@@ -204,7 +204,7 @@ local function parseString(ctx)
                 push("\f")
                 ctx.advanceChar()
             else
-                error("unsupported escaped symbol" .. c)
+                error("unsupported escaped symbol " .. c)
             end
             escaped = false
         elseif c == "\\" then
