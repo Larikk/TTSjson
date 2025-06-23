@@ -125,7 +125,9 @@ local function parseUtf8(ctx)
     ctx.advanceChar()
 
     local numberOfBytes
-    if b1 <= 0x7F then
+    if b1 <= 0x1F or b1 == 0x7F then
+        error("unescaped control character encountered: 0x" .. string.format("%02X", b1))
+    elseif b1 <= 0x7F then
         return c
     elseif b1 <= 0xDF then
         numberOfBytes = 2
