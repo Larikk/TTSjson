@@ -3,6 +3,31 @@ local module = {}
 local parseObject
 local parseArray
 
+local validHexDigits = {
+    ["0"] = true,
+    ["1"] = true,
+    ["2"] = true,
+    ["3"] = true,
+    ["4"] = true,
+    ["5"] = true,
+    ["6"] = true,
+    ["7"] = true,
+    ["8"] = true,
+    ["9"] = true,
+    ["a"] = true,
+    ["b"] = true,
+    ["c"] = true,
+    ["d"] = true,
+    ["e"] = true,
+    ["f"] = true,
+    ["A"] = true,
+    ["B"] = true,
+    ["C"] = true,
+    ["D"] = true,
+    ["E"] = true,
+    ["F"] = true,
+}
+
 local function lshift(x, by)
     return bit32.lshift(x, by)
 end
@@ -73,7 +98,24 @@ end
 local function parseUnicodeSeq(ctx)
     if ctx.currentChar ~= "u" then error("expected start of unicode sequence, got " .. ctx.currentChar) end
     ctx.advanceChar()
-    local hex = readChars(ctx, 4)
+
+    local hexDigits = {}
+    local isValidHex = true
+    for i = 1, 4 do
+        local c = ctx.currentChar
+        hexDigits[i] = c
+        if not validHexDigits[c] then
+            isValidHex = false
+        end
+        ctx.advanceChar()
+    end
+
+    local hex = table.concat(hexDigits)
+
+    if not isValidHex then
+        error("invalid unicode sequence: \\u" .. hex)
+    end
+
     return string.char(tonumber(hex, 16))
 end
 
