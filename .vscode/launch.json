@@ -5,38 +5,38 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Run MoonSharpPlayground",
-            "type": "coreclr",
+            "name": "Debug MoonSharpPlayground",
+            "type": "dotnet",
             "request": "launch",
-            "preLaunchTask": "build MoonSharpPlayground",
-            "program": "${workspaceFolder}/MoonSharpPlayground/bin/Debug/net8.0/MoonSharpPlayground.dll",
-            "args": [],
-            "cwd": "${workspaceFolder}",
-            "stopAtEntry": false,
-            "console": "internalConsole"
+            "projectPath": "${workspaceFolder}/MoonSharpPlayground/MoonSharpPlayground.csproj"
         },
         {
             "name": "Start debug server",
-            "type": "coreclr",
+            "type": "dotnet",
             "request": "launch",
-            "preLaunchTask": "build Debugger",
-            "program": "${workspaceFolder}/Debugger/bin/Debug/net8.0/Debugger.dll",
-            "args": [],
-            "cwd": "${workspaceFolder}",
-            "stopAtEntry": false,
-            "console": "internalConsole",
+            "projectPath": "${workspaceFolder}/Debugger/Debugger.csproj",   
+            "presentation": {
+                "hidden": true,
+                "group": "",
+                "order": 1,
+            }         
         },
         {
             "name": "Attach to moonsharp debugger",
             "type": "moonsharp-debug",
             "request": "attach",
             "debugServer": 41912,
-            "preLaunchTask": "Wait for moonsharp debug server"
+            "preLaunchTask": "Wait for moonsharp debug server",
+            "presentation": {
+                "hidden": true,
+                "group": "",
+                "order": 1,
+            }
         }
     ],
     "compounds": [
         {
-            "name": "Debug",
+            "name": "Debug TTSjson",
             "configurations": ["Start debug server", "Attach to moonsharp debugger"],
             "stopAll": true,
         }
