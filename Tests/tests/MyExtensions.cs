@@ -8,4 +8,9 @@ public static class MyExtensions
     {
         return table.Values.Select(mapFunc).ToList();
     }
+
+    public static string Repeat(this string s, int times)
+    {
+        return string.Concat(Enumerable.Repeat(s, times));
+    }
 }

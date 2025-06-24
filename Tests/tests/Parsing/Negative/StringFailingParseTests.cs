@@ -126,6 +126,14 @@ public class StringFailingParseTests
     }
 
     [Fact]
+    public void ShouldFailOnUnquotedUnicodeSequence()
+    {
+        var json = "\xFFFD";
+        var expectedErrorMessage = "expected start of a value, got \xFFFD";
+        ttsjson.AssertFailingParse(json, expectedErrorMessage);
+    }
+
+    [Fact]
     public void ShouldFailOnBackslash00()
     {
         var json = Q("\\\x00");

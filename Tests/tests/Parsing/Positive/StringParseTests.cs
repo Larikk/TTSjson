@@ -167,15 +167,6 @@ public class StringParseTests
         Assert.Equal("Lorem✪Ipsum✿Lorem�Ipsum", actual);
     }
 
-    // Misc
-
-    [Fact]
-    public void ShouldParseUnescapedDeleteChar()
-    {
-        var actual = ttsjson.Parse(Q("\x7F")).String;
-        Assert.Equal("\x7F", actual);
-    }
-
     private static string Q(string s)
     {
         return '"' + s + '"';

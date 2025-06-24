@@ -5,6 +5,14 @@ public class ObjectFailingParseTests
     private static readonly TTSjsonWrapper ttsjson = new();
 
     [Fact]
+    public void ShouldFailOnOpenObject()
+    {
+        var json = """{""";
+        var expectedErrorMessage = "expected start of string, got ";
+        ttsjson.AssertFailingParse(json, expectedErrorMessage);
+    }
+
+    [Fact]
     public void ShouldFailOnBracketAsKey()
     {
         var json = """{[: "x"}""";
@@ -160,6 +168,14 @@ public class ObjectFailingParseTests
     public void ShouldFailOnObjectWithTrailingGarbage()
     {
         var json = """{"a":"b"}#""";
+        var expectedErrorMessage = "json has data past the parsed value";
+        ttsjson.AssertFailingParse(json, expectedErrorMessage);
+    }
+
+    [Fact]
+    public void ShouldFailOnExtraClose()
+    {
+        var json = """{}}""";
         var expectedErrorMessage = "json has data past the parsed value";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }

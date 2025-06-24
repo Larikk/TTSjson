@@ -44,7 +44,6 @@ public class ArrayFailingParseTests
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
-
     [Fact]
     public void ShouldFailOnTrailingComma()
     {
@@ -52,7 +51,6 @@ public class ArrayFailingParseTests
         var expectedErrorMessage = "expected start of a value, got ]";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
-
 
     [Fact]
     public void ShouldFailOnDuplicateCommasBetweenValues()
@@ -62,7 +60,6 @@ public class ArrayFailingParseTests
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
-
     [Fact]
     public void ShouldFailOnDuplicateCommasAfterLastValue()
     {
@@ -70,7 +67,6 @@ public class ArrayFailingParseTests
         var expectedErrorMessage = "expected start of a value, got ,";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
-
 
     [Fact]
     public void ShouldFailOnExtraClose()
@@ -80,7 +76,6 @@ public class ArrayFailingParseTests
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
-
     [Fact]
     public void ShouldFailOnUnclosedArray()
     {
@@ -88,7 +83,6 @@ public class ArrayFailingParseTests
         var expectedErrorMessage = "expected ',' or ']' after array value but got ";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
-
 
     [Fact]
     public void ShouldFailOnMissingCommaBeforeInnerArray()
@@ -98,7 +92,6 @@ public class ArrayFailingParseTests
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
-
     [Fact]
     public void ShouldFailOnCommaWithoutValues()
     {
@@ -106,7 +99,6 @@ public class ArrayFailingParseTests
         var expectedErrorMessage = "expected start of a value, got ,";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
-
 
     [Fact]
     public void ShouldFailOnJustMinus()
@@ -128,7 +120,6 @@ public class ArrayFailingParseTests
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
-
     [Fact]
     public void ShouldFailOnUnclosedArrayOnSeparateLine()
     {
@@ -140,12 +131,35 @@ public class ArrayFailingParseTests
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
-
     [Fact]
     public void ShouldFailOnUnclosedArrayWithObject()
     {
         var json = "[{}";
         var expectedErrorMessage = "expected ',' or ']' after array value but got ";
+        ttsjson.AssertFailingParse(json, expectedErrorMessage);
+    }
+
+    [Fact]
+    public void ShouldFailOnUnopenedArrayWithValue()
+    {
+        var json = "1]";
+        var expectedErrorMessage = "json has data past the parsed value";
+        ttsjson.AssertFailingParse(json, expectedErrorMessage);
+    }
+
+    [Fact]
+    public void ShouldFailOnUnopenedArrayWithoutValue()
+    {
+        var json = "]";
+        var expectedErrorMessage = "expected start of a value, got ]";
+        ttsjson.AssertFailingParse(json, expectedErrorMessage);
+    }
+
+    [Fact]
+    public void ShouldFailOnDoubleArray()
+    {
+        var json = "[][]";
+        var expectedErrorMessage = "json has data past the parsed value";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 }
