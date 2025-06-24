@@ -28,13 +28,8 @@ local validHexDigits = {
     ["F"] = true,
 }
 
-local function lshift(x, by)
-    return bit32.lshift(x, by)
-end
-
-local function extractBits(x, leastSiginifactStart, width)
-    return bit32.extract(x, leastSiginifactStart, width)
-end
+local lshift = bit32.lshift
+local extractBits = bit32.extract
 
 local function isDigit(c)
     return c == "0" or c == "1" or c == "2" or c == "3" or c == "4" or c == "5" or c == "6" or c == "7" or c == "8" or
