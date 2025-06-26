@@ -322,7 +322,6 @@ function module.parse(str)
         if ctx.currentChar == "" then error("json is not terminated properly") end
         ctx.pos = ctx.pos + 1
         ctx.currentChar = string.sub(ctx.buffer, ctx.pos, ctx.pos)
-        --print("Remaining buffer: >" .. string.sub(ctx.buffer, ctx.pos, ctx.bufferLen))
     end
     ctx.skipWhiteSpace = function()
         local c = ctx.currentChar
