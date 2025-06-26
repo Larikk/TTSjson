@@ -1,0 +1,44 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug MoonSharpPlayground",
+            "type": "dotnet",
+            "request": "launch",
+            "projectPath": "${workspaceFolder}/MoonSharpPlayground/MoonSharpPlayground.csproj"
+        },
+        {
+            "name": "Start debug server",
+            "type": "dotnet",
+            "request": "launch",
+            "projectPath": "${workspaceFolder}/Debugger/Debugger.csproj",   
+            "presentation": {
+                "hidden": true,
+                "group": "",
+                "order": 1,
+            }         
+        },
+        {
+            "name": "Attach to moonsharp debugger",
+            "type": "moonsharp-debug",
+            "request": "attach",
+            "debugServer": 41912,
+            "preLaunchTask": "Wait for moonsharp debug server",
+            "presentation": {
+                "hidden": true,
+                "group": "",
+                "order": 1,
+            }
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Debug TTSjson",
+            "configurations": ["Start debug server", "Attach to moonsharp debugger"],
+            "stopAll": true,
+        }
+    ]
+}

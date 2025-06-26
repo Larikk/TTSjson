@@ -1,0 +1,10 @@
+{
+    "profiles": {
+        "Default": {
+            "commandName": "Project",
+            "environmentVariables": {
+                "TTSJSON_PATH": "${workspaceFolder}/TTSjson.lua"
+            }
+        }
+    }
+}

@@ -1,0 +1,47 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "dotnet",
+			"task": "build ${workspaceFolder}/Tests/Tests.csproj",
+			"file": "${workspaceFolder}/Tests/Tests.csproj",
+			"group": "build",
+			"problemMatcher": [],
+			"label": "build Tests"
+		},
+		{
+			"type": "dotnet",
+			"task": "build ${workspaceFolder}/Debugger/Debugger.csproj",
+			"file": "${workspaceFolder}/Debugger/Debugger.csproj",
+			"group": "build",
+			"problemMatcher": [],
+			"label": "build Debugger"
+		},
+		{
+			"label": "test",
+			"command": "dotnet",
+			"type": "shell",
+			"group": {
+				"kind": "test",
+				"isDefault": true
+			},
+			"args": [
+				"test",
+				"${workspaceFolder}/Tests/Tests.csproj"
+			],
+			"presentation": {
+				"reveal": "silent"
+			},
+			"problemMatcher": "$msCompile",
+			"options": {
+				"cwd": "${workspaceFolder}/"
+			}
+		},
+		{
+			"type": "shell",
+			"label": "Wait for moonsharp debug server",
+			"hide": true,
+			"command": "python ${workspaceFolder}/scripts/awaitDebugServer.py"
+		}
+	]
+}
