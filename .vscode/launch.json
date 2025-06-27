@@ -5,6 +5,17 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Run Benchmark",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build Benchmark",
+            "program": "${workspaceFolder}/Benchmark/bin/Debug/net8.0/Benchmark.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "console": "internalConsole"
+        },
+        {
             "name": "Debug MoonSharpPlayground",
             "type": "dotnet",
             "request": "launch",
