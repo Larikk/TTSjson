@@ -14,8 +14,8 @@ class TTSjsonDebugServer
         string scriptCode = File.ReadAllText(scriptPath);
         var script = new Script();
 
-        DynValue executionResult = script.DoString(scriptCode, null, "TTSjson");
-        server.AttachToScript(script, "TTSjson");
+        DynValue executionResult = script.DoString(scriptCode, null, scriptPath);
+        server.AttachToScript(script, scriptPath);
         ParseFunction = executionResult.Table.Get("parse").Function;
 
         server.Start();
