@@ -252,7 +252,8 @@ local function parseString(ctx)
             done = true
             ctx.nextByte()
         else
-            push(parseUtf8(ctx))
+            push(string.char(b))
+            ctx.nextByte()
         end
     end
 
@@ -358,11 +359,11 @@ function module.parse(str)
     ctx.pos = 1
     ctx.buffer = str
     ctx.bufferLen = #str
-    ctx.currentByte = string.byte(str, 1)
+    ctx.currentByte = string.unicode(str, 1)
     ctx.nextByte = function()
         if ctx.currentByte == nil then error("json is not terminated properly") end
         ctx.pos = ctx.pos + 1
-        ctx.currentByte = string.byte(ctx.buffer, ctx.pos)
+        ctx.currentByte = string.unicode(ctx.buffer, ctx.pos)
         return ctx.currentByte
     end
     ctx.currentChar = function()
