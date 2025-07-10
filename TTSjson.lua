@@ -1,8 +1,5 @@
 local module = {}
 
-local parseObject
-local parseArray
-
 local ASCII_SPACE = 0x20
 local ASCII_HORIZONTAL_TAB = 0x09  -- \t
 local ASCII_LINE_FEED = 0x0A       --\n
@@ -48,9 +45,6 @@ local ASCII_LOWER_U = 0x75
 local ASCII_OPENING_CURLY_BRACE = 0x7B -- {
 local ASCII_CLOSING_CURLY_BRACE = 0x7D -- }
 
----@diagnostic disable-next-line: undefined-field
-local unicode = string.unicode
-
 local validDigits = {
     [ASCII_0] = true,
     [ASCII_1] = true,
@@ -81,6 +75,11 @@ local numberCharacterCodepointToCharacter = {
     [ASCII_LOWER_E] = "e",
     [ASCII_UPPER_E] = "E",
 }
+
+---@diagnostic disable-next-line: undefined-field
+local unicode = string.unicode
+local parseObject
+local parseArray
 
 local function parseTrue(ctx)
     if ctx.currentCodepoint ~= ASCII_LOWER_T then error("expected start of true, got " .. ctx.currentChar()) end
