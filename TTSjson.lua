@@ -65,11 +65,6 @@ local function isDigit(b)
     return b ~= nil and b >= ASCII_0 and b <= ASCII_9
 end
 
-local function isHexDigit(b)
-    return b ~= nil and
-    (isDigit(b) or (b >= ASCII_UPPER_A and b <= ASCII_UPPER_F) or (b >= ASCII_LOWER_A and b <= ASCII_LOWER_F))
-end
-
 local function readChars(ctx, n)
     local tbl = {}
     for i = 1, n do
@@ -125,29 +120,26 @@ local function parseNumber(ctx)
     return n
 end
 
-local function parseUnicodeSeq(ctx)
-    if ctx.currentCodepoint ~= ASCII_LOWER_U then error("expected start of unicode sequence, got " .. ctx.currentChar()) end
-    ctx.nextCodepoint()
-
-    -- todo check for more optimization
-    local hexDigits = {}
-    local isValidHex = true
-    for i = 1, 4 do
-        local b = ctx.currentCodepoint
-        hexDigits[i] = ctx.currentChar()
-        if not isHexDigit(b) then
-            isValidHex = false
-        end
-        ctx.nextCodepoint()
+-- converts the ascii value of A (65) to 10, B to 11 etc
+local function codepointToHexValue(b)
+    if b >= ASCII_0 and b <= ASCII_9 then
+        return b - ASCII_0
+    elseif b >= ASCII_LOWER_A and b <= ASCII_LOWER_F then
+        return b - ASCII_LOWER_A + 10
+    elseif b >= ASCII_UPPER_A and b <= ASCII_UPPER_F then
+        return b - ASCII_UPPER_A + 10
+    else
+        error("invalid hex digit " .. string.char(b))
     end
+end
 
-    local hex = table.concat(hexDigits)
+local function parseUnicodeSeq(u1, u2, u3, u4)
+    local sum = codepointToHexValue(u1) * 4096
+        + codepointToHexValue(u2) * 256
+        + codepointToHexValue(u3) * 16
+        + codepointToHexValue(u4)
 
-    if not isValidHex then
-        error("invalid unicode sequence: \\u" .. hex)
-    end
-
-    return string.char(tonumber(hex, 16))
+    return string.char(sum)
 end
 
 local function parseString(ctx)
@@ -167,44 +159,42 @@ local function parseString(ctx)
         if escaped then
             if b == ASCII_DOUBLE_QUOTE then
                 push("\"")
-                ctx.nextCodepoint()
             elseif b == ASCII_BACKSLASH then
                 push("\\")
-                ctx.nextCodepoint()
             elseif b == ASCII_FORWARDSLASH then
                 push("/")
-                ctx.nextCodepoint()
             elseif b == ASCII_LOWER_N then
                 push("\n")
-                ctx.nextCodepoint()
             elseif b == ASCII_LOWER_U then
-                push(parseUnicodeSeq(ctx))
+                local char = parseUnicodeSeq(
+                    ctx.nextCodepoint(),
+                    ctx.nextCodepoint(),
+                    ctx.nextCodepoint(),
+                    ctx.nextCodepoint()
+                )
+                push(char)
             elseif b == ASCII_LOWER_R then
                 push("\r")
-                ctx.nextCodepoint()
             elseif b == ASCII_LOWER_T then
                 push("\t")
-                ctx.nextCodepoint()
             elseif b == ASCII_LOWER_B then
                 push("\b")
-                ctx.nextCodepoint()
             elseif b == ASCII_LOWER_F then
                 push("\f")
-                ctx.nextCodepoint()
             else
                 error("unsupported escaped symbol " .. ctx.currentChar())
             end
             escaped = false
         elseif b == ASCII_BACKSLASH then
             escaped = true
-            ctx.nextCodepoint()
         elseif b == ASCII_DOUBLE_QUOTE then
             done = true
-            ctx.nextCodepoint()
+        elseif b == nil then
+            error("json is not terminated properly")
         else
             push(string.char(b))
-            ctx.nextCodepoint()
         end
+        ctx.nextCodepoint()
     end
 
     return table.concat(sb)
@@ -272,7 +262,8 @@ parseObject = function(ctx)
 end
 
 parseArray = function(ctx)
-    if ctx.currentCodepoint ~= ASCII_OPENING_SQARE_BRACKET then error("expected start of array, got " .. ctx.currentChar()) end
+    if ctx.currentCodepoint ~= ASCII_OPENING_SQARE_BRACKET then error("expected start of array, got " ..
+    ctx.currentChar()) end
     ctx.nextCodepoint()
     ctx.skipWhiteSpace()
 
