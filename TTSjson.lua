@@ -82,42 +82,35 @@ local numberCharacterCodepointToCharacter = {
     [ASCII_UPPER_E] = "E",
 }
 
-local function readChars(ctx, n)
-    local tbl = {}
-    for i = 1, n do
-        tbl[i] = ctx.currentChar()
-        ctx.nextCodepoint()
+local function parseTrue(ctx)
+    if ctx.currentCodepoint ~= ASCII_LOWER_T then error("expected start of true, got " .. ctx.currentChar()) end
+
+    local b2 = ctx.nextCodepoint()
+    local b3 = ctx.nextCodepoint()
+    local b4 = ctx.nextCodepoint()
+
+    if b2 ~= ASCII_LOWER_R and b3 ~= ASCII_LOWER_U and b4 ~= ASCII_LOWER_E then
+        error("expected true, got t" .. string.char(b2) .. string.char(b3) .. string.char(b4))
     end
-    return table.concat(tbl)
+
+    ctx.nextCodepoint()
+    return true
 end
 
-local function parseBoolean(ctx)
-    if ctx.currentCodepoint == ASCII_LOWER_T then
-            local b2 = ctx.nextCodepoint()
-            local b3 = ctx.nextCodepoint()
-            local b4 = ctx.nextCodepoint()
+local function parseFalse(ctx)
+    if ctx.currentCodepoint ~= ASCII_LOWER_F then error("expected start of false, got " .. ctx.currentChar()) end
 
-            if b2 ~= ASCII_LOWER_R and b3 ~= ASCII_LOWER_U and b4 ~= ASCII_LOWER_E then
-                error("expected true, got t" .. string.char(b2) .. string.char(b3) .. string.char(b4))
-            end
+    local b2 = ctx.nextCodepoint()
+    local b3 = ctx.nextCodepoint()
+    local b4 = ctx.nextCodepoint()
+    local b5 = ctx.nextCodepoint()
 
-            ctx.nextCodepoint()
-            return nil
-    elseif ctx.currentCodepoint == ASCII_LOWER_F then
-            local b2 = ctx.nextCodepoint()
-            local b3 = ctx.nextCodepoint()
-            local b4 = ctx.nextCodepoint()
-            local b5 = ctx.nextCodepoint()
-
-            if b2 ~= ASCII_LOWER_A and b3 ~= ASCII_LOWER_L and b4 ~= ASCII_LOWER_S and b5 ~= ASCII_LOWER_E then
-                error("expected true, got t" .. string.char(b2) .. string.char(b3) .. string.char(b4))
-            end
-
-            ctx.nextCodepoint()
-            return nil
-    else
-        error("expected start of boolean, got " .. ctx.currentChar())
+    if b2 ~= ASCII_LOWER_A and b3 ~= ASCII_LOWER_L and b4 ~= ASCII_LOWER_S and b5 ~= ASCII_LOWER_E then
+        error("expected false, got f" .. string.char(b2) .. string.char(b3) .. string.char(b4) .. string.char(b5))
     end
+
+    ctx.nextCodepoint()
+    return false
 end
 
 local function parseNull(ctx)
@@ -260,8 +253,10 @@ local function parseValue(ctx)
         value = parseObject(ctx)
     elseif b == ASCII_OPENING_SQARE_BRACKET then
         value = parseArray(ctx)
-    elseif b == ASCII_LOWER_F or b == ASCII_LOWER_T then
-        value = parseBoolean(ctx)
+    elseif b == ASCII_LOWER_T then
+        value = parseTrue(ctx)
+    elseif b == ASCII_LOWER_F then
+        value = parseFalse(ctx)
     elseif b == ASCII_MINUS or validDigits[b] then
         value = parseNumber(ctx)
     elseif b == ASCII_LOWER_N then
