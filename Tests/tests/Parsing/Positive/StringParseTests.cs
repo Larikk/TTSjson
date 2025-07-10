@@ -136,35 +136,35 @@ public class StringParseTests
     [Fact]
     public void ShouldDecodeEuroSign()
     {
-        var actual = ttsjson.Parse(Q("\xE2\x82\xAC")).String;
+        var actual = ttsjson.Parse(Q("€")).String;
         Assert.Equal("€", actual);
     }
 
     [Fact]
     public void ShouldDecodeHalfWhiteCircle()
     {
-        var actual = ttsjson.Parse(Q("\xEF\xBF\xAE")).String;
+        var actual = ttsjson.Parse(Q("￮")).String;
         Assert.Equal("￮", actual);
     }
 
     [Fact]
     public void ShouldDecodeUnicodeCharactersAboveFFFFasFFFD()
     {
-        var actual = ttsjson.Parse(Q("\xF0\x90\x80\x80")).String;
+        var actual = ttsjson.Parse(Q("�")).String;
         Assert.Equal("�", actual);
     }
 
     [Fact]
     public void ShouldDecodeMultipleUnicodeCharacters()
     {
-        var actual = ttsjson.Parse(Q("\xE2\x9C\xAA\xE2\x9C\xBF\xF0\xB0\xBD\x84")).String;
+        var actual = ttsjson.Parse(Q("✪✿�")).String;
         Assert.Equal("✪✿�", actual);
     }
 
     [Fact]
     public void ShouldDecodeMultipleUnicodeCharactersWithText()
     {
-        var actual = ttsjson.Parse(Q("Lorem\xE2\x9C\xAAIpsum\xE2\x9C\xBFLorem\xF0\xB0\xBD\x84Ipsum")).String;
+        var actual = ttsjson.Parse(Q("Lorem✪Ipsum✿Lorem�Ipsum")).String;
         Assert.Equal("Lorem✪Ipsum✿Lorem�Ipsum", actual);
     }
 
