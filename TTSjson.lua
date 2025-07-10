@@ -61,6 +61,9 @@ local validHexDigits = {
 local lshift = bit32.lshift
 local extractBits = bit32.extract
 
+---@diagnostic disable-next-line: undefined-field
+local unicode = string.unicode
+
 local function isDigit(b)
     return b ~= nil and b >= ASCII_0 and b <= ASCII_9
 end
@@ -74,17 +77,17 @@ local function readChars(ctx, n)
     local tbl = {}
     for i = 1, n do
         tbl[i] = ctx.currentChar()
-        ctx.nextByte()
+        ctx.nextCodepoint()
     end
     return table.concat(tbl)
 end
 
 local function parseBoolean(ctx)
-    if ctx.currentByte == ASCII_LOWER_T then
+    if ctx.currentCodepoint == ASCII_LOWER_T then
         local s = readChars(ctx, 4)
         if s ~= "true" then error("expected true, got " .. s) end
         return true
-    elseif ctx.currentByte == ASCII_LOWER_F then
+    elseif ctx.currentCodepoint == ASCII_LOWER_F then
         local s = readChars(ctx, 5)
         if s ~= "false" then error("expected false, got " .. s) end
         return false
@@ -94,7 +97,7 @@ local function parseBoolean(ctx)
 end
 
 local function parseNull(ctx)
-    if ctx.currentByte ~= ASCII_LOWER_N then error("expected start of null, got " .. ctx.currentChar()) end
+    if ctx.currentCodepoint ~= ASCII_LOWER_N then error("expected start of null, got " .. ctx.currentChar()) end
     local s = readChars(ctx, 4)
 
     if s == "null" then
@@ -105,17 +108,17 @@ local function parseNull(ctx)
 end
 
 local function parseNumber(ctx)
-    if ctx.currentByte ~= ASCII_MINUS and not isDigit(ctx.currentByte) then
+    if ctx.currentCodepoint ~= ASCII_MINUS and not isDigit(ctx.currentCodepoint) then
         error("expected start of number, got " .. ctx.currentChar())
     end
 
     -- todo check for further optimization
     local tbl = {}
     local tblPos = 1
-    while isDigit(ctx.currentByte) or ctx.currentByte == ASCII_MINUS or ctx.currentByte == ASCII_PLUS or ctx.currentByte == ASCII_DOT or ctx.currentByte == ASCII_LOWER_E or ctx.currentByte == ASCII_UPPER_E do
-        tbl[tblPos] = string.char(ctx.currentByte)
+    while isDigit(ctx.currentCodepoint) or ctx.currentCodepoint == ASCII_MINUS or ctx.currentCodepoint == ASCII_PLUS or ctx.currentCodepoint == ASCII_DOT or ctx.currentCodepoint == ASCII_LOWER_E or ctx.currentCodepoint == ASCII_UPPER_E do
+        tbl[tblPos] = string.char(ctx.currentCodepoint)
         tblPos = tblPos + 1
-        ctx.nextByte()
+        ctx.nextCodepoint()
     end
 
     local s = table.concat(tbl)
@@ -126,19 +129,19 @@ local function parseNumber(ctx)
 end
 
 local function parseUnicodeSeq(ctx)
-    if ctx.currentByte ~= ASCII_LOWER_U then error("expected start of unicode sequence, got " .. ctx.currentChar()) end
-    ctx.nextByte()
+    if ctx.currentCodepoint ~= ASCII_LOWER_U then error("expected start of unicode sequence, got " .. ctx.currentChar()) end
+    ctx.nextCodepoint()
 
     -- todo check for more optimization
     local hexDigits = {}
     local isValidHex = true
     for i = 1, 4 do
-        local b = ctx.currentByte
+        local b = ctx.currentCodepoint
         hexDigits[i] = ctx.currentChar()
         if not isHexDigit(b) then
             isValidHex = false
         end
-        ctx.nextByte()
+        ctx.nextCodepoint()
     end
 
     local hex = table.concat(hexDigits)
@@ -151,8 +154,8 @@ local function parseUnicodeSeq(ctx)
 end
 
 local function parseUtf8(ctx)
-    local b1 = ctx.currentByte
-    ctx.nextByte()
+    local b1 = ctx.currentCodepoint
+    ctx.nextCodepoint()
 
     local numberOfBytes
     if b1 <= 0x1F or b1 == 0x7F then
@@ -171,8 +174,8 @@ local function parseUtf8(ctx)
 
     local tbl = { b1 }
     for i = 2, numberOfBytes do
-        tbl[i] = ctx.currentByte
-        ctx.nextByte()
+        tbl[i] = ctx.currentCodepoint
+        ctx.nextCodepoint()
     end
 
     -- Calculate U+wxyz
@@ -201,8 +204,8 @@ local function parseUtf8(ctx)
 end
 
 local function parseString(ctx)
-    if ctx.currentByte ~= ASCII_DOUBLE_QUOTE then error("expected start of string, got " .. ctx.currentChar()) end
-    ctx.nextByte()
+    if ctx.currentCodepoint ~= ASCII_DOUBLE_QUOTE then error("expected start of string, got " .. ctx.currentChar()) end
+    ctx.nextCodepoint()
     local done = false
     local escaped = false
     local sb = {}
@@ -213,47 +216,47 @@ local function parseString(ctx)
     end
 
     while not done do
-        local b = ctx.currentByte
+        local b = ctx.currentCodepoint
         if escaped then
             if b == ASCII_DOUBLE_QUOTE then
                 push("\"")
-                ctx.nextByte()
+                ctx.nextCodepoint()
             elseif b == ASCII_BACKSLASH then
                 push("\\")
-                ctx.nextByte()
+                ctx.nextCodepoint()
             elseif b == ASCII_FORWARDSLASH then
                 push("/")
-                ctx.nextByte()
+                ctx.nextCodepoint()
             elseif b == ASCII_LOWER_N then
                 push("\n")
-                ctx.nextByte()
+                ctx.nextCodepoint()
             elseif b == ASCII_LOWER_U then
                 push(parseUnicodeSeq(ctx))
             elseif b == ASCII_LOWER_R then
                 push("\r")
-                ctx.nextByte()
+                ctx.nextCodepoint()
             elseif b == ASCII_LOWER_T then
                 push("\t")
-                ctx.nextByte()
+                ctx.nextCodepoint()
             elseif b == ASCII_LOWER_B then
                 push("\b")
-                ctx.nextByte()
+                ctx.nextCodepoint()
             elseif b == ASCII_LOWER_F then
                 push("\f")
-                ctx.nextByte()
+                ctx.nextCodepoint()
             else
                 error("unsupported escaped symbol " .. ctx.currentChar())
             end
             escaped = false
         elseif b == ASCII_BACKSLASH then
             escaped = true
-            ctx.nextByte()
+            ctx.nextCodepoint()
         elseif b == ASCII_DOUBLE_QUOTE then
             done = true
-            ctx.nextByte()
+            ctx.nextCodepoint()
         else
             push(string.char(b))
-            ctx.nextByte()
+            ctx.nextCodepoint()
         end
     end
 
@@ -261,7 +264,7 @@ local function parseString(ctx)
 end
 
 local function parseValue(ctx)
-    local b = ctx.currentByte
+    local b = ctx.currentCodepoint
     local value
 
     if b == ASCII_DOUBLE_QUOTE then
@@ -286,12 +289,12 @@ local function parseValue(ctx)
 end
 
 parseObject = function(ctx)
-    if ctx.currentByte ~= ASCII_OPENING_CURLY_BRACE then error("expected start of object, got " .. ctx.currentChar()) end
-    ctx.nextByte()
+    if ctx.currentCodepoint ~= ASCII_OPENING_CURLY_BRACE then error("expected start of object, got " .. ctx.currentChar()) end
+    ctx.nextCodepoint()
     ctx.skipWhiteSpace()
 
-    if ctx.currentByte == ASCII_CLOSING_CURLY_BRACE then
-        ctx.nextByte()
+    if ctx.currentCodepoint == ASCII_CLOSING_CURLY_BRACE then
+        ctx.nextCodepoint()
         ctx.skipWhiteSpace()
         return {}
     end
@@ -301,16 +304,16 @@ parseObject = function(ctx)
     while true do
         local key = parseString(ctx)
         ctx.skipWhiteSpace()
-        if ctx.currentByte ~= ASCII_COLON then error("expected :, got " .. ctx.currentChar()) end
-        ctx.nextByte()
+        if ctx.currentCodepoint ~= ASCII_COLON then error("expected :, got " .. ctx.currentChar()) end
+        ctx.nextCodepoint()
         ctx.skipWhiteSpace()
         local value = parseValue(ctx)
         obj[key] = value
-        if ctx.currentByte == ASCII_COMMA then
-            ctx.nextByte()
+        if ctx.currentCodepoint == ASCII_COMMA then
+            ctx.nextCodepoint()
             ctx.skipWhiteSpace()
-        elseif ctx.currentByte == ASCII_CLOSING_CURLY_BRACE then
-            ctx.nextByte()
+        elseif ctx.currentCodepoint == ASCII_CLOSING_CURLY_BRACE then
+            ctx.nextCodepoint()
             ctx.skipWhiteSpace()
             return obj
         else
@@ -322,12 +325,12 @@ parseObject = function(ctx)
 end
 
 parseArray = function(ctx)
-    if ctx.currentByte ~= ASCII_OPENING_SQARE_BRACKET then error("expected start of array, got " .. ctx.currentChar()) end
-    ctx.nextByte()
+    if ctx.currentCodepoint ~= ASCII_OPENING_SQARE_BRACKET then error("expected start of array, got " .. ctx.currentChar()) end
+    ctx.nextCodepoint()
     ctx.skipWhiteSpace()
 
-    if ctx.currentByte == ASCII_CLOSING_SQUARE_BRACKET then
-        ctx.nextByte()
+    if ctx.currentCodepoint == ASCII_CLOSING_SQUARE_BRACKET then
+        ctx.nextCodepoint()
         ctx.skipWhiteSpace()
         return {}
     end
@@ -339,11 +342,11 @@ parseArray = function(ctx)
         local value = parseValue(ctx)
         tbl[tblPos] = value
         tblPos = tblPos + 1
-        if ctx.currentByte == ASCII_COMMA then
-            ctx.nextByte()
+        if ctx.currentCodepoint == ASCII_COMMA then
+            ctx.nextCodepoint()
             ctx.skipWhiteSpace()
-        elseif ctx.currentByte == ASCII_CLOSING_SQUARE_BRACKET then
-            ctx.nextByte()
+        elseif ctx.currentCodepoint == ASCII_CLOSING_SQUARE_BRACKET then
+            ctx.nextCodepoint()
             ctx.skipWhiteSpace()
             return tbl
         else
@@ -359,27 +362,27 @@ function module.parse(str)
     ctx.pos = 1
     ctx.buffer = str
     ctx.bufferLen = #str
-    ctx.currentByte = string.unicode(str, 1)
-    ctx.nextByte = function()
-        if ctx.currentByte == nil then error("json is not terminated properly") end
+    ctx.currentCodepoint = unicode(str, 1)
+    ctx.nextCodepoint = function()
+        if ctx.currentCodepoint == nil then error("json is not terminated properly") end
         ctx.pos = ctx.pos + 1
-        ctx.currentByte = string.unicode(ctx.buffer, ctx.pos)
-        return ctx.currentByte
+        ctx.currentCodepoint = unicode(ctx.buffer, ctx.pos)
+        return ctx.currentCodepoint
     end
     ctx.currentChar = function()
-        local b = ctx.currentByte
+        local b = ctx.currentCodepoint
         if (b == nil) then return "" end
         return string.char(b)
     end
     ctx.skipWhiteSpace = function()
-        local b = ctx.currentByte
+        local b = ctx.currentCodepoint
         while
             b == ASCII_SPACE
             or b == ASCII_HORIZONTAL_TAB
             or b == ASCII_LINE_FEED
             or b == ASCII_CARRIAGE_RETURN
         do
-            b = ctx.nextByte()
+            b = ctx.nextCodepoint()
         end
     end
 
@@ -387,7 +390,7 @@ function module.parse(str)
     local value = parseValue(ctx)
     ctx.skipWhiteSpace()
 
-    if ctx.currentByte ~= nil then error("json has data past the parsed value") end
+    if ctx.currentCodepoint ~= nil then error("json has data past the parsed value") end
 
     return value
 end
