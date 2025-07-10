@@ -39,6 +39,7 @@ local ASCII_LOWER_C = 0x63
 local ASCII_LOWER_D = 0x64
 local ASCII_LOWER_E = 0x65
 local ASCII_LOWER_F = 0x66
+local ASCII_LOWER_L = 0x6C
 local ASCII_LOWER_N = 0x6E
 local ASCII_LOWER_R = 0x72
 local ASCII_LOWER_T = 0x74
@@ -105,13 +106,16 @@ end
 
 local function parseNull(ctx)
     if ctx.currentCodepoint ~= ASCII_LOWER_N then error("expected start of null, got " .. ctx.currentChar()) end
-    local s = readChars(ctx, 4)
+    local b2 = ctx.nextCodepoint()
+    local b3 = ctx.nextCodepoint()
+    local b4 = ctx.nextCodepoint()
 
-    if s == "null" then
-        return nil
-    else
-        error("expected null, got " .. s)
+    if b2 ~= ASCII_LOWER_U and b3 ~= ASCII_LOWER_L and b4 ~= ASCII_LOWER_L then
+        error("expected null, got n" .. string.char(b2) .. string.char(b3) .. string.char(b4))
     end
+
+    ctx.nextCodepoint()
+    return nil
 end
 
 local function parseNumber(ctx)
