@@ -41,31 +41,6 @@ local ASCII_LOWER_U = 0x75
 local ASCII_OPENING_CURLY_BRACE = 0x7B -- {
 local ASCII_CLOSING_CURLY_BRACE = 0x7D -- }
 
-local validHexDigits = {
-    ["0"] = true,
-    ["1"] = true,
-    ["2"] = true,
-    ["3"] = true,
-    ["4"] = true,
-    ["5"] = true,
-    ["6"] = true,
-    ["7"] = true,
-    ["8"] = true,
-    ["9"] = true,
-    ["a"] = true,
-    ["b"] = true,
-    ["c"] = true,
-    ["d"] = true,
-    ["e"] = true,
-    ["f"] = true,
-    ["A"] = true,
-    ["B"] = true,
-    ["C"] = true,
-    ["D"] = true,
-    ["E"] = true,
-    ["F"] = true,
-}
-
 ---@diagnostic disable-next-line: undefined-field
 local unicode = string.unicode
 
