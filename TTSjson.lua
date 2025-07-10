@@ -42,6 +42,7 @@ local ASCII_LOWER_F = 0x66
 local ASCII_LOWER_L = 0x6C
 local ASCII_LOWER_N = 0x6E
 local ASCII_LOWER_R = 0x72
+local ASCII_LOWER_S = 0x73
 local ASCII_LOWER_T = 0x74
 local ASCII_LOWER_U = 0x75
 local ASCII_OPENING_CURLY_BRACE = 0x7B -- {
@@ -92,13 +93,28 @@ end
 
 local function parseBoolean(ctx)
     if ctx.currentCodepoint == ASCII_LOWER_T then
-        local s = readChars(ctx, 4)
-        if s ~= "true" then error("expected true, got " .. s) end
-        return true
+            local b2 = ctx.nextCodepoint()
+            local b3 = ctx.nextCodepoint()
+            local b4 = ctx.nextCodepoint()
+
+            if b2 ~= ASCII_LOWER_R and b3 ~= ASCII_LOWER_U and b4 ~= ASCII_LOWER_E then
+                error("expected true, got t" .. string.char(b2) .. string.char(b3) .. string.char(b4))
+            end
+
+            ctx.nextCodepoint()
+            return nil
     elseif ctx.currentCodepoint == ASCII_LOWER_F then
-        local s = readChars(ctx, 5)
-        if s ~= "false" then error("expected false, got " .. s) end
-        return false
+            local b2 = ctx.nextCodepoint()
+            local b3 = ctx.nextCodepoint()
+            local b4 = ctx.nextCodepoint()
+            local b5 = ctx.nextCodepoint()
+
+            if b2 ~= ASCII_LOWER_A and b3 ~= ASCII_LOWER_L and b4 ~= ASCII_LOWER_S and b5 ~= ASCII_LOWER_E then
+                error("expected true, got t" .. string.char(b2) .. string.char(b3) .. string.char(b4))
+            end
+
+            ctx.nextCodepoint()
+            return nil
     else
         error("expected start of boolean, got " .. ctx.currentChar())
     end
