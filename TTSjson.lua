@@ -120,24 +120,36 @@ local function parseNumber(ctx)
     return n
 end
 
--- converts the ascii value of A (65) to 10, B to 11 etc
-local function codepointToHexValue(b)
-    if b >= ASCII_0 and b <= ASCII_9 then
-        return b - ASCII_0
-    elseif b >= ASCII_LOWER_A and b <= ASCII_LOWER_F then
-        return b - ASCII_LOWER_A + 10
-    elseif b >= ASCII_UPPER_A and b <= ASCII_UPPER_F then
-        return b - ASCII_UPPER_A + 10
-    else
-        error("invalid hex digit " .. string.char(b))
-    end
-end
+local hexCharCodepointToHexValue = {
+    [0x30] = 0,  -- '0'
+    [0x31] = 1,  -- '1'
+    [0x32] = 2,  -- '2'
+    [0x33] = 3,  -- '3'
+    [0x34] = 4,  -- '4'
+    [0x35] = 5,  -- '5'
+    [0x36] = 6,  -- '6'
+    [0x37] = 7,  -- '7'
+    [0x38] = 8,  -- '8'
+    [0x39] = 9,  -- '9'
+    [0x41] = 10, -- 'A'
+    [0x42] = 11, -- 'B'
+    [0x43] = 12, -- 'C'
+    [0x44] = 13, -- 'D'
+    [0x45] = 14, -- 'E'
+    [0x46] = 15, -- 'F'
+    [0x61] = 10, -- 'a'
+    [0x62] = 11, -- 'b'
+    [0x63] = 12, -- 'c'
+    [0x64] = 13, -- 'd'
+    [0x65] = 14, -- 'e'
+    [0x66] = 15, -- 'f'
+}
 
 local function parseUnicodeSeq(u1, u2, u3, u4)
-    local sum = codepointToHexValue(u1) * 4096
-        + codepointToHexValue(u2) * 256
-        + codepointToHexValue(u3) * 16
-        + codepointToHexValue(u4)
+    local sum = hexCharCodepointToHexValue[u1] * 4096
+        + hexCharCodepointToHexValue[u2] * 256
+        + hexCharCodepointToHexValue[u3] * 16
+        + hexCharCodepointToHexValue[u4]
 
     return string.char(sum)
 end
@@ -262,8 +274,10 @@ parseObject = function(ctx)
 end
 
 parseArray = function(ctx)
-    if ctx.currentCodepoint ~= ASCII_OPENING_SQARE_BRACKET then error("expected start of array, got " ..
-    ctx.currentChar()) end
+    if ctx.currentCodepoint ~= ASCII_OPENING_SQARE_BRACKET then
+        error("expected start of array, got " ..
+        ctx.currentChar())
+    end
     ctx.nextCodepoint()
     ctx.skipWhiteSpace()
 
