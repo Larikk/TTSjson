@@ -58,9 +58,6 @@ local validHexDigits = {
     ["F"] = true,
 }
 
-local lshift = bit32.lshift
-local extractBits = bit32.extract
-
 ---@diagnostic disable-next-line: undefined-field
 local unicode = string.unicode
 
@@ -151,56 +148,6 @@ local function parseUnicodeSeq(ctx)
     end
 
     return string.char(tonumber(hex, 16))
-end
-
-local function parseUtf8(ctx)
-    local b1 = ctx.currentCodepoint
-    ctx.nextCodepoint()
-
-    local numberOfBytes
-    if b1 <= 0x1F or b1 == 0x7F then
-        error("unescaped control character encountered: 0x" .. string.format("%02X", b1))
-    elseif b1 <= 0x7F then
-        return string.char(b1)
-    elseif b1 <= 0xDF then
-        numberOfBytes = 2
-    elseif b1 <= 0xEF then
-        numberOfBytes = 3
-    elseif b1 <= 0xF7 then
-        numberOfBytes = 4
-    else
-        error("expected valid byte for utf-8 codepoint, got 0x" .. string.format("%02X", b1))
-    end
-
-    local tbl = { b1 }
-    for i = 2, numberOfBytes do
-        tbl[i] = ctx.currentCodepoint
-        ctx.nextCodepoint()
-    end
-
-    -- Calculate U+wxyz
-    local w = 0
-    local x = 0
-    local y = 0
-    local z = 0
-    if numberOfBytes == 2 then
-        -- Transforms 110xxxyy 10yyzzzz to U+0xyz
-        x = extractBits(tbl[1], 2, 3)
-        y = lshift(extractBits(tbl[1], 0, 2), 2) + extractBits(tbl[2], 4, 2)
-        z = extractBits(tbl[2], 0, 4)
-    elseif numberOfBytes == 3 then
-        -- Transforms 1110wwww 10xxxxyy 10yyzzzz to U+wxyz
-        w = extractBits(tbl[1], 0, 4)
-        x = extractBits(tbl[2], 2, 4)
-        y = lshift(extractBits(tbl[2], 0, 2), 2) + extractBits(tbl[3], 4, 2)
-        z = extractBits(tbl[3], 0, 4)
-    elseif numberOfBytes == 4 then
-        -- TTS can not display any unicode characters above U+FFFF so we just return � (U+FFFD) in such cases
-        return string.char(0xFFFD)
-    end
-
-    local sum = lshift(w, 12) + lshift(x, 8) + lshift(y, 4) + z
-    return string.char(sum)
 end
 
 local function parseString(ctx)
