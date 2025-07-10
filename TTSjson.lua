@@ -242,6 +242,8 @@ local function parseString(ctx)
             done = true
         elseif b == nil then
             error("json is not terminated properly")
+        elseif b <= 0x1f or b == 0x7F then
+            error("unescaped control character encountered: 0x" .. string.format("%02X", b))
         else
             push(string.char(b))
         end
