@@ -8,7 +8,7 @@ public class GeneralFailingParseTests
     public void ShouldFailOnIncompleteNull()
     {
         var json = "nul";
-        var expectedErrorMessage = "json is not terminated properly";
+        var expectedErrorMessage = "expected null, got nul";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -16,7 +16,7 @@ public class GeneralFailingParseTests
     public void ShouldFailOnIncompleteFalse()
     {
         var json = "fale";
-        var expectedErrorMessage = "json is not terminated properly";
+        var expectedErrorMessage = "expected false, got fale";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 

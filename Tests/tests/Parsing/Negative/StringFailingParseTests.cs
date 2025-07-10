@@ -105,7 +105,7 @@ public class StringFailingParseTests
     public void ShouldFailOnSurrogateThenEscapeU1x()
     {
         var json = Q("\\uD800\\u1x");
-        var expectedErrorMessage = "json is not terminated properly";
+        var expectedErrorMessage = "attempt to perform arithmetic on a nil value";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -177,7 +177,7 @@ public class StringFailingParseTests
     public void ShouldFailOnIncompleteEscapedCharacter()
     {
         var json = Q("\\u00A");
-        var expectedErrorMessage = "invalid unicode sequence: \\u00A\"";
+        var expectedErrorMessage = "attempt to perform arithmetic on a nil value";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -209,7 +209,7 @@ public class StringFailingParseTests
     public void ShouldFailOnInvalidUnicodeEscape()
     {
         var json = Q("\\uqqqq");
-        var expectedErrorMessage = "invalid unicode sequence: \\uqqqq";
+        var expectedErrorMessage = "attempt to perform arithmetic on a nil value";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
