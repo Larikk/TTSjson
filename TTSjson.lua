@@ -82,6 +82,24 @@ local validDigits = {
     [ASCII_9] = true,
 }
 
+local numberCharacterCodepointToCharacter = {
+    [ASCII_0] = "0",
+    [ASCII_1] = "1",
+    [ASCII_2] = "2",
+    [ASCII_3] = "3",
+    [ASCII_4] = "4",
+    [ASCII_5] = "5",
+    [ASCII_6] = "6",
+    [ASCII_7] = "7",
+    [ASCII_8] = "8",
+    [ASCII_9] = "9",
+    [ASCII_MINUS] = "-",
+    [ASCII_PLUS] = "+",
+    [ASCII_DOT] = ".",
+    [ASCII_LOWER_E] = "e",
+    [ASCII_UPPER_E] = "E",
+}
+
 local function readChars(ctx, n)
     local tbl = {}
     for i = 1, n do
@@ -121,11 +139,14 @@ local function parseNumber(ctx)
         error("expected start of number, got " .. ctx.currentChar())
     end
 
-    -- todo check for further optimization
     local tbl = {}
     local tblPos = 1
-    while validDigits[ctx.currentCodepoint] or ctx.currentCodepoint == ASCII_MINUS or ctx.currentCodepoint == ASCII_PLUS or ctx.currentCodepoint == ASCII_DOT or ctx.currentCodepoint == ASCII_LOWER_E or ctx.currentCodepoint == ASCII_UPPER_E do
-        tbl[tblPos] = string.char(ctx.currentCodepoint)
+    while true do
+        local char = numberCharacterCodepointToCharacter[ctx.currentCodepoint]
+        if char == nil then
+            break
+        end
+        tbl[tblPos] = char
         tblPos = tblPos + 1
         ctx.nextCodepoint()
     end
