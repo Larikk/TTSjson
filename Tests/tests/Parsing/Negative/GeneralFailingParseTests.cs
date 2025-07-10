@@ -176,7 +176,7 @@ public class GeneralFailingParseTests
     public void ShouldFailOnUnclosedArrayPartialNull()
     {
         var json = "[false, nul";
-        var expectedErrorMessage = "json is not terminated properly";
+        var expectedErrorMessage = "expected null, got nul";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
