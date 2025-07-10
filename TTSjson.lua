@@ -14,6 +14,14 @@ local ASCII_MINUS = 0x2D
 local ASCII_DOT = 0x2E
 local ASCII_FORWARDSLASH = 0x2F
 local ASCII_0 = 0x30
+local ASCII_1 = 0x31
+local ASCII_2 = 0x32
+local ASCII_3 = 0x33
+local ASCII_4 = 0x34
+local ASCII_5 = 0x35
+local ASCII_6 = 0x36
+local ASCII_7 = 0x37
+local ASCII_8 = 0x38
 local ASCII_9 = 0x39
 local ASCII_COLON = 0x3A
 local ASCII_UPPER_A = 0x41
@@ -61,9 +69,18 @@ local validHexDigits = {
 ---@diagnostic disable-next-line: undefined-field
 local unicode = string.unicode
 
-local function isDigit(b)
-    return b ~= nil and b >= ASCII_0 and b <= ASCII_9
-end
+local validDigits = {
+    [ASCII_0] = true,
+    [ASCII_1] = true,
+    [ASCII_2] = true,
+    [ASCII_3] = true,
+    [ASCII_4] = true,
+    [ASCII_5] = true,
+    [ASCII_6] = true,
+    [ASCII_7] = true,
+    [ASCII_8] = true,
+    [ASCII_9] = true,
+}
 
 local function readChars(ctx, n)
     local tbl = {}
@@ -100,14 +117,14 @@ local function parseNull(ctx)
 end
 
 local function parseNumber(ctx)
-    if ctx.currentCodepoint ~= ASCII_MINUS and not isDigit(ctx.currentCodepoint) then
+    if ctx.currentCodepoint ~= ASCII_MINUS and not validDigits[ctx.currentCodepoint] then
         error("expected start of number, got " .. ctx.currentChar())
     end
 
     -- todo check for further optimization
     local tbl = {}
     local tblPos = 1
-    while isDigit(ctx.currentCodepoint) or ctx.currentCodepoint == ASCII_MINUS or ctx.currentCodepoint == ASCII_PLUS or ctx.currentCodepoint == ASCII_DOT or ctx.currentCodepoint == ASCII_LOWER_E or ctx.currentCodepoint == ASCII_UPPER_E do
+    while validDigits[ctx.currentCodepoint] or ctx.currentCodepoint == ASCII_MINUS or ctx.currentCodepoint == ASCII_PLUS or ctx.currentCodepoint == ASCII_DOT or ctx.currentCodepoint == ASCII_LOWER_E or ctx.currentCodepoint == ASCII_UPPER_E do
         tbl[tblPos] = string.char(ctx.currentCodepoint)
         tblPos = tblPos + 1
         ctx.nextCodepoint()
@@ -224,7 +241,7 @@ local function parseValue(ctx)
         value = parseArray(ctx)
     elseif b == ASCII_LOWER_F or b == ASCII_LOWER_T then
         value = parseBoolean(ctx)
-    elseif b == ASCII_MINUS or isDigit(b) then
+    elseif b == ASCII_MINUS or validDigits[b] then
         value = parseNumber(ctx)
     elseif b == ASCII_LOWER_N then
         value = parseNull(ctx)
@@ -276,7 +293,7 @@ end
 parseArray = function(ctx)
     if ctx.currentCodepoint ~= ASCII_OPENING_SQARE_BRACKET then
         error("expected start of array, got " ..
-        ctx.currentChar())
+            ctx.currentChar())
     end
     ctx.nextCodepoint()
     ctx.skipWhiteSpace()
