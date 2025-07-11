@@ -1,9 +1,9 @@
 local module = {}
 
-local ASCII_SPACE = 0x20
 local ASCII_HORIZONTAL_TAB = 0x09  -- \t
 local ASCII_LINE_FEED = 0x0A       --\n
 local ASCII_CARRIAGE_RETURN = 0x0D -- \r
+local ASCII_SPACE = 0x20
 local ASCII_DOUBLE_QUOTE = 0x22
 local ASCII_PLUS = 0x2B
 local ASCII_COMMA = 0x2C
