@@ -263,33 +263,6 @@ parseString = function(ctx)
     return concat(sb)
 end
 
-parseValue = function(ctx)
-    local b = ctx.currentCodepoint
-    local value
-
-    if b == ASCII_DOUBLE_QUOTE then
-        value = parseString(ctx)
-    elseif b == ASCII_OPENING_CURLY_BRACE then
-        value = parseObject(ctx)
-    elseif b == ASCII_OPENING_SQARE_BRACKET then
-        value = parseArray(ctx)
-    elseif b == ASCII_LOWER_T then
-        value = parseTrue(ctx)
-    elseif b == ASCII_LOWER_F then
-        value = parseFalse(ctx)
-    elseif b == ASCII_MINUS or validDigits[b] then
-        value = parseNumber(ctx)
-    elseif b == ASCII_LOWER_N then
-        value = parseNull(ctx)
-    else
-        error("expected start of a value, got " .. ctx.currentChar())
-    end
-
-    ctx.skipWhiteSpace()
-
-    return value
-end
-
 parseObject = function(ctx)
     if ctx.currentCodepoint ~= ASCII_OPENING_CURLY_BRACE then error("expected start of object, got " .. ctx.currentChar()) end
     ctx.nextCodepoint()
@@ -360,6 +333,37 @@ parseArray = function(ctx)
     end
 
     return tbl
+end
+
+local valuePrefixToValueHandlers = {
+    [ASCII_DOUBLE_QUOTE] = parseString,
+    [ASCII_MINUS] = parseNumber,
+    [ASCII_0] = parseNumber,
+    [ASCII_1] = parseNumber,
+    [ASCII_2] = parseNumber,
+    [ASCII_3] = parseNumber,
+    [ASCII_4] = parseNumber,
+    [ASCII_5] = parseNumber,
+    [ASCII_6] = parseNumber,
+    [ASCII_7] = parseNumber,
+    [ASCII_8] = parseNumber,
+    [ASCII_9] = parseNumber,
+    [ASCII_LOWER_T] = parseTrue,
+    [ASCII_LOWER_F] = parseFalse,
+    [ASCII_LOWER_N] = parseNull,
+    [ASCII_OPENING_CURLY_BRACE] = parseObject,
+    [ASCII_OPENING_SQARE_BRACKET] = parseArray,
+}
+
+parseValue = function(ctx)
+    local handler = valuePrefixToValueHandlers[ctx.currentCodepoint]
+    if handler == nil then
+        error("expected start of a value, got " .. ctx.currentChar())
+    end
+
+    local value = handler(ctx)
+    ctx.skipWhiteSpace()
+    return value
 end
 
 function module.parse(str)
