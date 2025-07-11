@@ -76,6 +76,17 @@ local validNumberCharacters = {
     [ASCII_UPPER_E] = true,
 }
 
+local escapedCharactersSubstitutions = {
+    [ASCII_DOUBLE_QUOTE] = "\"",
+    [ASCII_BACKSLASH] = "\\",
+    [ASCII_FORWARDSLASH] = "/",
+    [ASCII_LOWER_N] = "\n",
+    [ASCII_LOWER_R] = "\r",
+    [ASCII_LOWER_T] = "\t",
+    [ASCII_LOWER_B] = "\b",
+    [ASCII_LOWER_F] = "\f",
+}
+
 -- localize global lookups for performance gains
 local tochar = string.char
 local substring = string.sub
@@ -222,31 +233,20 @@ parseString = function(ctx)
 
             -- Handle the escaped character
             b = ctx.nextCodepoint()
-            if b == ASCII_DOUBLE_QUOTE then
-                sb[sbPos] = "\""
-            elseif b == ASCII_BACKSLASH then
-                sb[sbPos] = "\\"
-            elseif b == ASCII_FORWARDSLASH then
-                sb[sbPos] = "/"
-            elseif b == ASCII_LOWER_N then
-                sb[sbPos] = "\n"
-            elseif b == ASCII_LOWER_U then
+            if b == ASCII_LOWER_U then
                 sb[sbPos] = parseUnicodeSeq(
                     ctx.nextCodepoint(),
                     ctx.nextCodepoint(),
                     ctx.nextCodepoint(),
                     ctx.nextCodepoint()
                 )
-            elseif b == ASCII_LOWER_R then
-                sb[sbPos] = "\r"
-            elseif b == ASCII_LOWER_T then
-                sb[sbPos] = "\t"
-            elseif b == ASCII_LOWER_B then
-                sb[sbPos] = "\b"
-            elseif b == ASCII_LOWER_F then
-                sb[sbPos] = "\f"
+            else
+                local substitute = escapedCharactersSubstitutions[b]
+                if substitute ~= nil then
+                    sb[sbPos] = substitute
             else
                 error("unsupported escaped symbol " .. ctx.currentChar())
+            end
             end
             sbPos = sbPos + 1
             lastSegmentStart = ctx.pos + 1 -- Start next segment after the escaped char
