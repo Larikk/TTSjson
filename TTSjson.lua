@@ -154,47 +154,37 @@ toCharNullsafe = function(codepoint)
 end
 
 parseTrue = function(ctx)
-    local b1 = ctx.currentCodepoint
-    local b2 = ctx.nextCodepoint()
-    local b3 = ctx.nextCodepoint()
-    local b4 = ctx.nextCodepoint()
-
-    if b1 ~= ASCII_LOWER_T or b2 ~= ASCII_LOWER_R or b3 ~= ASCII_LOWER_U or b4 ~= ASCII_LOWER_E then
-        error("expected true, got " ..
-            toCharNullsafe(b1) .. toCharNullsafe(b2) .. toCharNullsafe(b3) .. toCharNullsafe(b4))
+    local endpos = ctx.pos + 3
+    local token = substring(ctx.buffer, ctx.pos, endpos)
+    if token ~= "true" then
+        error("expected true, got " .. token)
     end
 
+    ctx.pos = endpos
     ctx.nextCodepoint()
     return true
 end
 
 parseFalse = function(ctx)
-    local b1 = ctx.currentCodepoint
-    local b2 = ctx.nextCodepoint()
-    local b3 = ctx.nextCodepoint()
-    local b4 = ctx.nextCodepoint()
-    local b5 = ctx.nextCodepoint()
-
-    if b1 ~= ASCII_LOWER_F or b2 ~= ASCII_LOWER_A or b3 ~= ASCII_LOWER_L or b4 ~= ASCII_LOWER_S or b5 ~= ASCII_LOWER_E then
-        error("expected false, got " ..
-            toCharNullsafe(b1) .. toCharNullsafe(b2) .. toCharNullsafe(b3) .. toCharNullsafe(b4) .. toCharNullsafe(b5))
+    local endpos = ctx.pos + 4
+    local token = substring(ctx.buffer, ctx.pos, endpos)
+    if token ~= "false" then
+        error("expected false, got " .. token)
     end
 
+    ctx.pos = endpos
     ctx.nextCodepoint()
     return false
 end
 
 parseNull = function(ctx)
-    local b1 = ctx.currentCodepoint
-    local b2 = ctx.nextCodepoint()
-    local b3 = ctx.nextCodepoint()
-    local b4 = ctx.nextCodepoint()
-
-    if b1 ~= ASCII_LOWER_N or b2 ~= ASCII_LOWER_U or b3 ~= ASCII_LOWER_L or b4 ~= ASCII_LOWER_L then
-        error("expected null, got " ..
-            toCharNullsafe(b1) .. toCharNullsafe(b2) .. toCharNullsafe(b3) .. toCharNullsafe(b4))
+    local endpos = ctx.pos + 3
+    local token = substring(ctx.buffer, ctx.pos, endpos)
+    if token ~= "null" then
+        error("expected null, got " .. token)
     end
 
+    ctx.pos = endpos
     ctx.nextCodepoint()
     return nil
 end

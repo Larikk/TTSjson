@@ -24,7 +24,7 @@ public class GeneralFailingParseTests
     public void ShouldFailOnIncompleteTrue()
     {
         var json = "tr";
-        var expectedErrorMessage = "json is not terminated properly";
+        var expectedErrorMessage = "expected true, got tr";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
