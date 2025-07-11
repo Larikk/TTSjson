@@ -133,7 +133,6 @@ local format = string.format
 ---@diagnostic disable-next-line: undefined-field
 local unicode = string.unicode
 
-local toCharNullsafe
 local parseTrue
 local parseFalse
 local parseNull
@@ -143,15 +142,6 @@ local parseString
 local parseValue
 local parseObject
 local parseArray
-
--- convencience function for error messages
-toCharNullsafe = function(codepoint)
-    if codepoint == nil then
-        return ""
-    else
-        return tochar(codepoint)
-    end
-end
 
 parseTrue = function(ctx)
     local endpos = ctx.pos + 3
