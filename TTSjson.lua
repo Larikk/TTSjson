@@ -113,7 +113,7 @@ parseTrue = function(ctx)
 
     if b1 ~= ASCII_LOWER_T or b2 ~= ASCII_LOWER_R or b3 ~= ASCII_LOWER_U or b4 ~= ASCII_LOWER_E then
         error("expected true, got " ..
-        toCharNullsafe(b1) .. toCharNullsafe(b2) .. toCharNullsafe(b3) .. toCharNullsafe(b4))
+            toCharNullsafe(b1) .. toCharNullsafe(b2) .. toCharNullsafe(b3) .. toCharNullsafe(b4))
     end
 
     ctx.nextCodepoint()
@@ -129,7 +129,7 @@ parseFalse = function(ctx)
 
     if b1 ~= ASCII_LOWER_F or b2 ~= ASCII_LOWER_A or b3 ~= ASCII_LOWER_L or b4 ~= ASCII_LOWER_S or b5 ~= ASCII_LOWER_E then
         error("expected false, got " ..
-        toCharNullsafe(b1) .. toCharNullsafe(b2) .. toCharNullsafe(b3) .. toCharNullsafe(b4) .. toCharNullsafe(b5))
+            toCharNullsafe(b1) .. toCharNullsafe(b2) .. toCharNullsafe(b3) .. toCharNullsafe(b4) .. toCharNullsafe(b5))
     end
 
     ctx.nextCodepoint()
@@ -144,7 +144,7 @@ parseNull = function(ctx)
 
     if b1 ~= ASCII_LOWER_N or b2 ~= ASCII_LOWER_U or b3 ~= ASCII_LOWER_L or b4 ~= ASCII_LOWER_L then
         error("expected null, got " ..
-        toCharNullsafe(b1) .. toCharNullsafe(b2) .. toCharNullsafe(b3) .. toCharNullsafe(b4))
+            toCharNullsafe(b1) .. toCharNullsafe(b2) .. toCharNullsafe(b3) .. toCharNullsafe(b4))
     end
 
     ctx.nextCodepoint()
@@ -207,26 +207,29 @@ end
 parseString = function(ctx)
     if ctx.currentCodepoint ~= ASCII_DOUBLE_QUOTE then error("expected start of string, got " .. ctx.currentChar()) end
     ctx.nextCodepoint()
-    local done = false
-    local escaped = false
     local sb = {}
     local sbPos = 1
+    local lastSegmentStart = ctx.pos
 
-    while not done do
+    while true do
         local b = ctx.currentCodepoint
-        if escaped then
+        if b == ASCII_BACKSLASH then
+            -- Append the segment of non-escaped characters so far
+            if lastSegmentStart < ctx.pos then
+                sb[sbPos] = substring(ctx.buffer, lastSegmentStart, ctx.pos - 1)
+                sbPos = sbPos + 1
+            end
+
+            -- Handle the escaped character
+            b = ctx.nextCodepoint()
             if b == ASCII_DOUBLE_QUOTE then
                 sb[sbPos] = "\""
-                sbPos = sbPos + 1
             elseif b == ASCII_BACKSLASH then
                 sb[sbPos] = "\\"
-                sbPos = sbPos + 1
             elseif b == ASCII_FORWARDSLASH then
                 sb[sbPos] = "/"
-                sbPos = sbPos + 1
             elseif b == ASCII_LOWER_N then
                 sb[sbPos] = "\n"
-                sbPos = sbPos + 1
             elseif b == ASCII_LOWER_U then
                 sb[sbPos] = parseUnicodeSeq(
                     ctx.nextCodepoint(),
@@ -234,39 +237,29 @@ parseString = function(ctx)
                     ctx.nextCodepoint(),
                     ctx.nextCodepoint()
                 )
-                sbPos = sbPos + 1
             elseif b == ASCII_LOWER_R then
                 sb[sbPos] = "\r"
-                sbPos = sbPos + 1
             elseif b == ASCII_LOWER_T then
                 sb[sbPos] = "\t"
-                sbPos = sbPos + 1
             elseif b == ASCII_LOWER_B then
                 sb[sbPos] = "\b"
-                sbPos = sbPos + 1
             elseif b == ASCII_LOWER_F then
                 sb[sbPos] = "\f"
-                sbPos = sbPos + 1
             else
                 error("unsupported escaped symbol " .. ctx.currentChar())
             end
-            escaped = false
-        elseif b == ASCII_BACKSLASH then
-            escaped = true
-        elseif b == ASCII_DOUBLE_QUOTE then
-            done = true
-        elseif b == nil then
-            error("json is not terminated properly")
-        elseif b <= 0x1f or b == 0x7F then
-            error("unescaped control character encountered: 0x" .. format("%02X", b))
-        else
-            sb[sbPos] = tochar(b)
             sbPos = sbPos + 1
+            lastSegmentStart = ctx.pos + 1 -- Start next segment after the escaped char
+        elseif b == ASCII_DOUBLE_QUOTE then
+            -- End of string, append the final segment
+            if lastSegmentStart < ctx.pos then
+                sb[sbPos] = substring(ctx.buffer, lastSegmentStart, ctx.pos - 1)
+            end
+            ctx.nextCodepoint()
+            return concat(sb)
         end
         ctx.nextCodepoint()
     end
-
-    return concat(sb)
 end
 
 parseObject = function(ctx)
