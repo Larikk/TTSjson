@@ -78,11 +78,20 @@ local numberCharacterCodepointToCharacter = {
 
 ---@diagnostic disable-next-line: undefined-field
 local unicode = string.unicode
+
+local toCharNullsafe
+local parseTrue
+local parseFalse
+local parseNull
+local parseNumber
+local parseUnicodeSeq
+local parseString
+local parseValue
 local parseObject
 local parseArray
 
 -- convencience function for error messages
-local function toCharNullsafe(codepoint)
+toCharNullsafe = function(codepoint)
     if codepoint == nil then
         return ""
     else
@@ -90,7 +99,7 @@ local function toCharNullsafe(codepoint)
     end
 end
 
-local function parseTrue(ctx)
+parseTrue = function(ctx)
     if ctx.currentCodepoint ~= ASCII_LOWER_T then error("expected start of true, got " .. toCharNullsafe(ctx.currentCodepoint)) end
 
     local b2 = ctx.nextCodepoint()
@@ -105,7 +114,7 @@ local function parseTrue(ctx)
     return true
 end
 
-local function parseFalse(ctx)
+parseFalse = function(ctx)
     if ctx.currentCodepoint ~= ASCII_LOWER_F then error("expected start of false, got " .. toCharNullsafe(ctx.currentCodepoint)) end
 
     local b2 = ctx.nextCodepoint()
@@ -121,7 +130,7 @@ local function parseFalse(ctx)
     return false
 end
 
-local function parseNull(ctx)
+parseNull = function(ctx)
     if ctx.currentCodepoint ~= ASCII_LOWER_N then error("expected start of null, got " .. toCharNullsafe(ctx.currentCodepoint)) end
     local b2 = ctx.nextCodepoint()
     local b3 = ctx.nextCodepoint()
@@ -135,7 +144,7 @@ local function parseNull(ctx)
     return nil
 end
 
-local function parseNumber(ctx)
+parseNumber = function(ctx)
     if ctx.currentCodepoint ~= ASCII_MINUS and not validDigits[ctx.currentCodepoint] then
         error("expected start of number, got " .. ctx.currentChar())
     end
@@ -184,7 +193,7 @@ local hexCharCodepointToHexValue = {
     [ASCII_LOWER_F] = 15,
 }
 
-local function parseUnicodeSeq(u1, u2, u3, u4)
+parseUnicodeSeq = function(u1, u2, u3, u4)
     local sum = hexCharCodepointToHexValue[u1] * 4096
         + hexCharCodepointToHexValue[u2] * 256
         + hexCharCodepointToHexValue[u3] * 16
@@ -193,7 +202,7 @@ local function parseUnicodeSeq(u1, u2, u3, u4)
     return string.char(sum)
 end
 
-local function parseString(ctx)
+parseString = function(ctx)
     if ctx.currentCodepoint ~= ASCII_DOUBLE_QUOTE then error("expected start of string, got " .. ctx.currentChar()) end
     ctx.nextCodepoint()
     local done = false
@@ -253,7 +262,7 @@ local function parseString(ctx)
     return table.concat(sb)
 end
 
-local function parseValue(ctx)
+parseValue = function(ctx)
     local b = ctx.currentCodepoint
     local value
 
