@@ -389,7 +389,6 @@ function module.parse(str)
     local ctx = {}
     ctx.pos = 1
     ctx.buffer = str
-    ctx.bufferLen = #str
     ctx.currentCodepoint = unicode(str, 1)
     ctx.nextCodepoint = function()
         if ctx.currentCodepoint == nil then error("json is not terminated properly") end
