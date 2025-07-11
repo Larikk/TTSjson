@@ -124,6 +124,13 @@ local illegalControlCharactersInsideStrings = {
     [0x7F] = true,
 }
 
+local whiteSpaceCharacters = {
+    [ASCII_SPACE] = true,
+    [ASCII_HORIZONTAL_TAB] = true,
+    [ASCII_LINE_FEED] = true,
+    [ASCII_CARRIAGE_RETURN] = true,
+}
+
 -- localize global lookups for performance gains
 local tochar = string.char
 local substring = string.sub
@@ -149,9 +156,7 @@ parseTrue = function(ctx)
     if token ~= "true" then
         error("expected true, got " .. token)
     end
-
-    ctx.pos = endpos
-    ctx.nextCodepoint()
+    ctx.setPosition(endpos + 1)
     return true
 end
 
@@ -161,9 +166,7 @@ parseFalse = function(ctx)
     if token ~= "false" then
         error("expected false, got " .. token)
     end
-
-    ctx.pos = endpos
-    ctx.nextCodepoint()
+    ctx.setPosition(endpos + 1)
     return false
 end
 
@@ -173,9 +176,7 @@ parseNull = function(ctx)
     if token ~= "null" then
         error("expected null, got " .. token)
     end
-
-    ctx.pos = endpos
-    ctx.nextCodepoint()
+    ctx.setPosition(endpos + 1)
     return nil
 end
 
@@ -396,6 +397,10 @@ function module.parse(str)
         ctx.currentCodepoint = unicode(ctx.buffer, ctx.pos)
         return ctx.currentCodepoint
     end
+    ctx.setPosition = function(pos)
+        ctx.pos = pos
+        ctx.currentCodepoint = unicode(str, pos)
+    end
     ctx.currentChar = function()
         local b = ctx.currentCodepoint
         if (b == nil) then return "" end
@@ -403,12 +408,7 @@ function module.parse(str)
     end
     ctx.skipWhiteSpace = function()
         local b = ctx.currentCodepoint
-        while
-            b == ASCII_SPACE
-            or b == ASCII_HORIZONTAL_TAB
-            or b == ASCII_LINE_FEED
-            or b == ASCII_CARRIAGE_RETURN
-        do
+        while whiteSpaceCharacters[b] do
             b = ctx.nextCodepoint()
         end
     end
