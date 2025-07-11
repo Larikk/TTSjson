@@ -106,14 +106,13 @@ toCharNullsafe = function(codepoint)
 end
 
 parseTrue = function(ctx)
-    if ctx.currentCodepoint ~= ASCII_LOWER_T then error("expected start of true, got " .. toCharNullsafe(ctx.currentCodepoint)) end
-
+    local b1 = ctx.currentCodepoint
     local b2 = ctx.nextCodepoint()
     local b3 = ctx.nextCodepoint()
     local b4 = ctx.nextCodepoint()
 
-    if b2 ~= ASCII_LOWER_R or b3 ~= ASCII_LOWER_U or b4 ~= ASCII_LOWER_E then
-        error("expected true, got t" .. toCharNullsafe(b2) .. toCharNullsafe(b3) .. toCharNullsafe(b4))
+    if b1 ~= ASCII_LOWER_T or b2 ~= ASCII_LOWER_R or b3 ~= ASCII_LOWER_U or b4 ~= ASCII_LOWER_E then
+        error("expected true, got " .. toCharNullsafe(b1) .. toCharNullsafe(b2) .. toCharNullsafe(b3) .. toCharNullsafe(b4))
     end
 
     ctx.nextCodepoint()
@@ -121,15 +120,14 @@ parseTrue = function(ctx)
 end
 
 parseFalse = function(ctx)
-    if ctx.currentCodepoint ~= ASCII_LOWER_F then error("expected start of false, got " .. toCharNullsafe(ctx.currentCodepoint)) end
-
+    local b1 = ctx.currentCodepoint
     local b2 = ctx.nextCodepoint()
     local b3 = ctx.nextCodepoint()
     local b4 = ctx.nextCodepoint()
     local b5 = ctx.nextCodepoint()
 
-    if b2 ~= ASCII_LOWER_A or b3 ~= ASCII_LOWER_L or b4 ~= ASCII_LOWER_S or b5 ~= ASCII_LOWER_E then
-        error("expected false, got f" .. toCharNullsafe(b2) .. toCharNullsafe(b3) .. toCharNullsafe(b4) .. toCharNullsafe(b5))
+    if b1 ~= ASCII_LOWER_F or b2 ~= ASCII_LOWER_A or b3 ~= ASCII_LOWER_L or b4 ~= ASCII_LOWER_S or b5 ~= ASCII_LOWER_E then
+        error("expected false, got " .. toCharNullsafe(b1) .. toCharNullsafe(b2) .. toCharNullsafe(b3) .. toCharNullsafe(b4) .. toCharNullsafe(b5))
     end
 
     ctx.nextCodepoint()
@@ -137,13 +135,13 @@ parseFalse = function(ctx)
 end
 
 parseNull = function(ctx)
-    if ctx.currentCodepoint ~= ASCII_LOWER_N then error("expected start of null, got " .. toCharNullsafe(ctx.currentCodepoint)) end
+    local b1 = ctx.currentCodepoint
     local b2 = ctx.nextCodepoint()
     local b3 = ctx.nextCodepoint()
     local b4 = ctx.nextCodepoint()
 
-    if b2 ~= ASCII_LOWER_U or b3 ~= ASCII_LOWER_L or b4 ~= ASCII_LOWER_L then
-        error("expected null, got n" .. toCharNullsafe(b2) .. toCharNullsafe(b3) .. toCharNullsafe(b4))
+    if b1 ~= ASCII_LOWER_N or b2 ~= ASCII_LOWER_U or b3 ~= ASCII_LOWER_L or b4 ~= ASCII_LOWER_L then
+        error("expected null, got " .. toCharNullsafe(b1) .. toCharNullsafe(b2) .. toCharNullsafe(b3) .. toCharNullsafe(b4))
     end
 
     ctx.nextCodepoint()
