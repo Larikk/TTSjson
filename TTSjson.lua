@@ -87,6 +87,43 @@ local escapedCharactersSubstitutions = {
     [ASCII_LOWER_F] = "\f",
 }
 
+-- characters 0x00-0x1F and 0x7F are not allowed to be unescaped in json strings
+local illegalControlCharactersInsideStrings = {
+    [0x00] = true,
+    [0x01] = true,
+    [0x02] = true,
+    [0x03] = true,
+    [0x04] = true,
+    [0x05] = true,
+    [0x06] = true,
+    [0x07] = true,
+    [0x08] = true,
+    [0x09] = true,
+    [0x0A] = true,
+    [0x0B] = true,
+    [0x0C] = true,
+    [0x0D] = true,
+    [0x0E] = true,
+    [0x0F] = true,
+    [0x10] = true,
+    [0x11] = true,
+    [0x12] = true,
+    [0x13] = true,
+    [0x14] = true,
+    [0x15] = true,
+    [0x16] = true,
+    [0x17] = true,
+    [0x18] = true,
+    [0x19] = true,
+    [0x1A] = true,
+    [0x1B] = true,
+    [0x1C] = true,
+    [0x1D] = true,
+    [0x1E] = true,
+    [0x1F] = true,
+    [0x7F] = true,
+}
+
 -- localize global lookups for performance gains
 local tochar = string.char
 local substring = string.sub
@@ -244,9 +281,9 @@ parseString = function(ctx)
                 local substitute = escapedCharactersSubstitutions[b]
                 if substitute ~= nil then
                     sb[sbPos] = substitute
-            else
-                error("unsupported escaped symbol " .. ctx.currentChar())
-            end
+                else
+                    error("unsupported escaped symbol " .. ctx.currentChar())
+                end
             end
             sbPos = sbPos + 1
             lastSegmentStart = ctx.pos + 1 -- Start next segment after the escaped char
@@ -257,6 +294,9 @@ parseString = function(ctx)
             end
             ctx.nextCodepoint()
             return concat(sb)
+        elseif illegalControlCharactersInsideStrings[b] then
+            error("unescaped control character encountered: 0x" .. string.format("%02X", b))
+        else
         end
         ctx.nextCodepoint()
     end
