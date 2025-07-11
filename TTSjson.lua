@@ -112,7 +112,8 @@ parseTrue = function(ctx)
     local b4 = ctx.nextCodepoint()
 
     if b1 ~= ASCII_LOWER_T or b2 ~= ASCII_LOWER_R or b3 ~= ASCII_LOWER_U or b4 ~= ASCII_LOWER_E then
-        error("expected true, got " .. toCharNullsafe(b1) .. toCharNullsafe(b2) .. toCharNullsafe(b3) .. toCharNullsafe(b4))
+        error("expected true, got " ..
+        toCharNullsafe(b1) .. toCharNullsafe(b2) .. toCharNullsafe(b3) .. toCharNullsafe(b4))
     end
 
     ctx.nextCodepoint()
@@ -127,7 +128,8 @@ parseFalse = function(ctx)
     local b5 = ctx.nextCodepoint()
 
     if b1 ~= ASCII_LOWER_F or b2 ~= ASCII_LOWER_A or b3 ~= ASCII_LOWER_L or b4 ~= ASCII_LOWER_S or b5 ~= ASCII_LOWER_E then
-        error("expected false, got " .. toCharNullsafe(b1) .. toCharNullsafe(b2) .. toCharNullsafe(b3) .. toCharNullsafe(b4) .. toCharNullsafe(b5))
+        error("expected false, got " ..
+        toCharNullsafe(b1) .. toCharNullsafe(b2) .. toCharNullsafe(b3) .. toCharNullsafe(b4) .. toCharNullsafe(b5))
     end
 
     ctx.nextCodepoint()
@@ -141,7 +143,8 @@ parseNull = function(ctx)
     local b4 = ctx.nextCodepoint()
 
     if b1 ~= ASCII_LOWER_N or b2 ~= ASCII_LOWER_U or b3 ~= ASCII_LOWER_L or b4 ~= ASCII_LOWER_L then
-        error("expected null, got " .. toCharNullsafe(b1) .. toCharNullsafe(b2) .. toCharNullsafe(b3) .. toCharNullsafe(b4))
+        error("expected null, got " ..
+        toCharNullsafe(b1) .. toCharNullsafe(b2) .. toCharNullsafe(b3) .. toCharNullsafe(b4))
     end
 
     ctx.nextCodepoint()
@@ -208,38 +211,42 @@ parseString = function(ctx)
     local escaped = false
     local sb = {}
     local sbPos = 1
-    local push = function(s)
-        sb[sbPos] = s
-        sbPos = sbPos + 1
-    end
 
     while not done do
         local b = ctx.currentCodepoint
         if escaped then
             if b == ASCII_DOUBLE_QUOTE then
-                push("\"")
+                sb[sbPos] = "\""
+                sbPos = sbPos + 1
             elseif b == ASCII_BACKSLASH then
-                push("\\")
+                sb[sbPos] = "\\"
+                sbPos = sbPos + 1
             elseif b == ASCII_FORWARDSLASH then
-                push("/")
+                sb[sbPos] = "/"
+                sbPos = sbPos + 1
             elseif b == ASCII_LOWER_N then
-                push("\n")
+                sb[sbPos] = "\n"
+                sbPos = sbPos + 1
             elseif b == ASCII_LOWER_U then
-                local char = parseUnicodeSeq(
+                sb[sbPos] = parseUnicodeSeq(
                     ctx.nextCodepoint(),
                     ctx.nextCodepoint(),
                     ctx.nextCodepoint(),
                     ctx.nextCodepoint()
                 )
-                push(char)
+                sbPos = sbPos + 1
             elseif b == ASCII_LOWER_R then
-                push("\r")
+                sb[sbPos] = "\r"
+                sbPos = sbPos + 1
             elseif b == ASCII_LOWER_T then
-                push("\t")
+                sb[sbPos] = "\t"
+                sbPos = sbPos + 1
             elseif b == ASCII_LOWER_B then
-                push("\b")
+                sb[sbPos] = "\b"
+                sbPos = sbPos + 1
             elseif b == ASCII_LOWER_F then
-                push("\f")
+                sb[sbPos] = "\f"
+                sbPos = sbPos + 1
             else
                 error("unsupported escaped symbol " .. ctx.currentChar())
             end
@@ -253,7 +260,8 @@ parseString = function(ctx)
         elseif b <= 0x1f or b == 0x7F then
             error("unescaped control character encountered: 0x" .. format("%02X", b))
         else
-            push(tochar(b))
+            sb[sbPos] = tochar(b)
+            sbPos = sbPos + 1
         end
         ctx.nextCodepoint()
     end
