@@ -58,22 +58,22 @@ local validDigits = {
     [ASCII_9] = true,
 }
 
-local numberCharacterCodepointToCharacter = {
-    [ASCII_0] = "0",
-    [ASCII_1] = "1",
-    [ASCII_2] = "2",
-    [ASCII_3] = "3",
-    [ASCII_4] = "4",
-    [ASCII_5] = "5",
-    [ASCII_6] = "6",
-    [ASCII_7] = "7",
-    [ASCII_8] = "8",
-    [ASCII_9] = "9",
-    [ASCII_MINUS] = "-",
-    [ASCII_PLUS] = "+",
-    [ASCII_DOT] = ".",
-    [ASCII_LOWER_E] = "e",
-    [ASCII_UPPER_E] = "E",
+local validNumberCharacters = {
+    [ASCII_0] = true,
+    [ASCII_1] = true,
+    [ASCII_2] = true,
+    [ASCII_3] = true,
+    [ASCII_4] = true,
+    [ASCII_5] = true,
+    [ASCII_6] = true,
+    [ASCII_7] = true,
+    [ASCII_8] = true,
+    [ASCII_9] = true,
+    [ASCII_MINUS] = true,
+    [ASCII_PLUS] = true,
+    [ASCII_DOT] = true,
+    [ASCII_LOWER_E] = true,
+    [ASCII_UPPER_E] = true,
 }
 
 -- localize global lookups for performance gains
@@ -154,21 +154,16 @@ parseNumber = function(ctx)
         error("expected start of number, got " .. ctx.currentChar())
     end
 
-    local tbl = {}
-    local tblPos = 1
+    local startPos = ctx.pos
     while true do
-        local char = numberCharacterCodepointToCharacter[ctx.currentCodepoint]
-        if char == nil then
+        if not validNumberCharacters[ctx.currentCodepoint] then
             break
         end
-        tbl[tblPos] = char
-        tblPos = tblPos + 1
         ctx.nextCodepoint()
     end
 
-    local s = concat(tbl)
+    local s = string.sub(ctx.buffer, startPos, ctx.pos - 1)
     local n = tonumber(s)
-
     if n == nil then error("not a number: " .. s) end
     return n
 end
