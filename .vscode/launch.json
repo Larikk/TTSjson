@@ -9,7 +9,7 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build Benchmark",
-            "program": "${workspaceFolder}/Benchmark/bin/Debug/net8.0/Benchmark.dll",
+            "program": "${workspaceFolder}/Benchmark/bin/Release/net8.0/Benchmark.dll",
             "args": [],
             "cwd": "${workspaceFolder}",
             "stopAtEntry": false,
