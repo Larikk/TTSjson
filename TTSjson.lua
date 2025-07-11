@@ -76,6 +76,11 @@ local numberCharacterCodepointToCharacter = {
     [ASCII_UPPER_E] = "E",
 }
 
+-- localize global lookups for performance gains
+local char = string.char
+local concat = table.concat
+local tonumber = tonumber
+local format = string.format
 ---@diagnostic disable-next-line: undefined-field
 local unicode = string.unicode
 
@@ -95,7 +100,7 @@ toCharNullsafe = function(codepoint)
     if codepoint == nil then
         return ""
     else
-        return string.char(codepoint)
+        return char(codepoint)
     end
 end
 
@@ -161,7 +166,7 @@ parseNumber = function(ctx)
         ctx.nextCodepoint()
     end
 
-    local s = table.concat(tbl)
+    local s = concat(tbl)
     local n = tonumber(s)
 
     if n == nil then error("not a number: " .. s) end
@@ -199,7 +204,7 @@ parseUnicodeSeq = function(u1, u2, u3, u4)
         + hexCharCodepointToHexValue[u3] * 16
         + hexCharCodepointToHexValue[u4]
 
-    return string.char(sum)
+    return char(sum)
 end
 
 parseString = function(ctx)
@@ -252,14 +257,14 @@ parseString = function(ctx)
         elseif b == nil then
             error("json is not terminated properly")
         elseif b <= 0x1f or b == 0x7F then
-            error("unescaped control character encountered: 0x" .. string.format("%02X", b))
+            error("unescaped control character encountered: 0x" .. format("%02X", b))
         else
-            push(string.char(b))
+            push(char(b))
         end
         ctx.nextCodepoint()
     end
 
-    return table.concat(sb)
+    return concat(sb)
 end
 
 parseValue = function(ctx)
@@ -376,7 +381,7 @@ function module.parse(str)
     ctx.currentChar = function()
         local b = ctx.currentCodepoint
         if (b == nil) then return "" end
-        return string.char(b)
+        return char(b)
     end
     ctx.skipWhiteSpace = function()
         local b = ctx.currentCodepoint
