@@ -78,6 +78,7 @@ local validNumberCharacters = {
 
 -- localize global lookups for performance gains
 local tochar = string.char
+local substring = string.sub
 local concat = table.concat
 local tonumber = tonumber
 local format = string.format
@@ -162,7 +163,7 @@ parseNumber = function(ctx)
         ctx.nextCodepoint()
     end
 
-    local s = string.sub(ctx.buffer, startPos, ctx.pos - 1)
+    local s = substring(ctx.buffer, startPos, ctx.pos - 1)
     local n = tonumber(s)
     if n == nil then error("not a number: " .. s) end
     return n
