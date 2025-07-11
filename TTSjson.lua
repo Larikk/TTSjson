@@ -77,7 +77,7 @@ local numberCharacterCodepointToCharacter = {
 }
 
 -- localize global lookups for performance gains
-local char = string.char
+local tochar = string.char
 local concat = table.concat
 local tonumber = tonumber
 local format = string.format
@@ -100,7 +100,7 @@ toCharNullsafe = function(codepoint)
     if codepoint == nil then
         return ""
     else
-        return char(codepoint)
+        return tochar(codepoint)
     end
 end
 
@@ -204,7 +204,7 @@ parseUnicodeSeq = function(u1, u2, u3, u4)
         + hexCharCodepointToHexValue[u3] * 16
         + hexCharCodepointToHexValue[u4]
 
-    return char(sum)
+    return tochar(sum)
 end
 
 parseString = function(ctx)
@@ -259,7 +259,7 @@ parseString = function(ctx)
         elseif b <= 0x1f or b == 0x7F then
             error("unescaped control character encountered: 0x" .. format("%02X", b))
         else
-            push(char(b))
+            push(tochar(b))
         end
         ctx.nextCodepoint()
     end
@@ -381,7 +381,7 @@ function module.parse(str)
     ctx.currentChar = function()
         local b = ctx.currentCodepoint
         if (b == nil) then return "" end
-        return char(b)
+        return tochar(b)
     end
     ctx.skipWhiteSpace = function()
         local b = ctx.currentCodepoint
