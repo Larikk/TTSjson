@@ -8,7 +8,7 @@ public class ArrayFailingParseTests
     public void ShouldFailOnNoComma()
     {
         var json = "[1 true]";
-        var expectedErrorMessage = "expected ',' or ']' after array value but got t";
+        var expectedErrorMessage = "expected ',' or ']' after array value, got 't'";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -24,7 +24,7 @@ public class ArrayFailingParseTests
     public void ShouldFailOnInvalidSeparator()
     {
         var json = "[1; true]";
-        var expectedErrorMessage = "expected ',' or ']' after array value but got ;";
+        var expectedErrorMessage = "expected ',' or ']' after array value, got ';'";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -80,7 +80,7 @@ public class ArrayFailingParseTests
     public void ShouldFailOnUnclosedArray()
     {
         var json = "[1, 2";
-        var expectedErrorMessage = "expected ',' or ']' after array value but got ";
+        var expectedErrorMessage = "expected ',' or ']' after array value, got ''";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -88,7 +88,7 @@ public class ArrayFailingParseTests
     public void ShouldFailOnMissingCommaBeforeInnerArray()
     {
         var json = "[1 [2]]";
-        var expectedErrorMessage = "expected ',' or ']' after array value but got [";
+        var expectedErrorMessage = "expected ',' or ']' after array value, got '['";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -127,7 +127,7 @@ public class ArrayFailingParseTests
         1,
         2,
         3";
-        var expectedErrorMessage = "expected ',' or ']' after array value but got ";
+        var expectedErrorMessage = "expected ',' or ']' after array value, got ''";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -135,7 +135,7 @@ public class ArrayFailingParseTests
     public void ShouldFailOnUnclosedArrayWithObject()
     {
         var json = "[{}";
-        var expectedErrorMessage = "expected ',' or ']' after array value but got ";
+        var expectedErrorMessage = "expected ',' or ']' after array value, got ''";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 

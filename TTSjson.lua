@@ -307,7 +307,7 @@ parseArray = function(ctx)
             ctx.skipWhiteSpace()
             return tbl
         else
-            error("expected ',' or ']' after array value but got " .. ctx.currentChar())
+            errorf("expected ',' or ']' after array value, got '%s'", ctx.currentChar())
         end
     end
 

@@ -128,7 +128,7 @@ public class GeneralFailingParseTests
     public void ShouldFailOnOpenArrayString()
     {
         var json = "[\"a\"";
-        var expectedErrorMessage = "expected ',' or ']' after array value but got ";
+        var expectedErrorMessage = "expected ',' or ']' after array value, got ''";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
