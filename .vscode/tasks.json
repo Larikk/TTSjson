@@ -18,13 +18,18 @@
 			"label": "build Debugger"
 		},
 		{
-			"type": "dotnet",
-			"task": "build ${workspaceFolder}/Benchmark/Benchmark.csproj",
-			"file": "${workspaceFolder}/Benchmark/Benchmark.csproj",
+            "label": "build Benchmark",
+            "command": "dotnet",
+            "type": "process",
 			"group": "build",
-			"problemMatcher": [],
-			"label": "build Benchmark"
-		},
+            "args": [
+                "build",
+                "${workspaceFolder}/Benchmark/Benchmark.csproj",
+                "-c",
+                "Release"
+            ],
+            "problemMatcher": "$msCompile"
+        },
 		{
 			"label": "test",
 			"command": "dotnet",

@@ -58,226 +58,195 @@ local validDigits = {
     [ASCII_9] = true,
 }
 
-local numberCharacterCodepointToCharacter = {
-    [ASCII_0] = "0",
-    [ASCII_1] = "1",
-    [ASCII_2] = "2",
-    [ASCII_3] = "3",
-    [ASCII_4] = "4",
-    [ASCII_5] = "5",
-    [ASCII_6] = "6",
-    [ASCII_7] = "7",
-    [ASCII_8] = "8",
-    [ASCII_9] = "9",
-    [ASCII_MINUS] = "-",
-    [ASCII_PLUS] = "+",
-    [ASCII_DOT] = ".",
-    [ASCII_LOWER_E] = "e",
-    [ASCII_UPPER_E] = "E",
+local validNumberCharacters = {
+    [ASCII_0] = true,
+    [ASCII_1] = true,
+    [ASCII_2] = true,
+    [ASCII_3] = true,
+    [ASCII_4] = true,
+    [ASCII_5] = true,
+    [ASCII_6] = true,
+    [ASCII_7] = true,
+    [ASCII_8] = true,
+    [ASCII_9] = true,
+    [ASCII_MINUS] = true,
+    [ASCII_PLUS] = true,
+    [ASCII_DOT] = true,
+    [ASCII_LOWER_E] = true,
+    [ASCII_UPPER_E] = true,
 }
 
+local escapedCharactersSubstitutions = {
+    [ASCII_DOUBLE_QUOTE] = "\"",
+    [ASCII_BACKSLASH] = "\\",
+    [ASCII_FORWARDSLASH] = "/",
+    [ASCII_LOWER_N] = "\n",
+    [ASCII_LOWER_R] = "\r",
+    [ASCII_LOWER_T] = "\t",
+    [ASCII_LOWER_B] = "\b",
+    [ASCII_LOWER_F] = "\f",
+}
+
+-- characters 0x00-0x1F and 0x7F are not allowed to be unescaped in json strings
+local illegalControlCharactersInsideStrings = {
+    [0x00] = true,
+    [0x01] = true,
+    [0x02] = true,
+    [0x03] = true,
+    [0x04] = true,
+    [0x05] = true,
+    [0x06] = true,
+    [0x07] = true,
+    [0x08] = true,
+    [0x09] = true,
+    [0x0A] = true,
+    [0x0B] = true,
+    [0x0C] = true,
+    [0x0D] = true,
+    [0x0E] = true,
+    [0x0F] = true,
+    [0x10] = true,
+    [0x11] = true,
+    [0x12] = true,
+    [0x13] = true,
+    [0x14] = true,
+    [0x15] = true,
+    [0x16] = true,
+    [0x17] = true,
+    [0x18] = true,
+    [0x19] = true,
+    [0x1A] = true,
+    [0x1B] = true,
+    [0x1C] = true,
+    [0x1D] = true,
+    [0x1E] = true,
+    [0x1F] = true,
+    [0x7F] = true,
+}
+
+local whiteSpaceCharacters = {
+    [ASCII_SPACE] = true,
+    [ASCII_HORIZONTAL_TAB] = true,
+    [ASCII_LINE_FEED] = true,
+    [ASCII_CARRIAGE_RETURN] = true,
+}
+
+-- localize global lookups for performance gains
+local tochar = string.char
+local substring = string.sub
+local concat = table.concat
+local tonumber = tonumber
+local format = string.format
 ---@diagnostic disable-next-line: undefined-field
 local unicode = string.unicode
+
+local parseTrue
+local parseFalse
+local parseNull
+local parseNumber
+local parseString
+local parseValue
 local parseObject
 local parseArray
 
--- convencience function for error messages
-local function toCharNullsafe(codepoint)
-    if codepoint == nil then
-        return ""
-    else
-        return string.char(codepoint)
+parseTrue = function(ctx)
+    local endpos = ctx.pos + 3
+    local token = substring(ctx.buffer, ctx.pos, endpos)
+    if token ~= "true" then
+        error("expected true, got " .. token)
     end
-end
-
-local function parseTrue(ctx)
-    if ctx.currentCodepoint ~= ASCII_LOWER_T then error("expected start of true, got " .. toCharNullsafe(ctx.currentCodepoint)) end
-
-    local b2 = ctx.nextCodepoint()
-    local b3 = ctx.nextCodepoint()
-    local b4 = ctx.nextCodepoint()
-
-    if b2 ~= ASCII_LOWER_R or b3 ~= ASCII_LOWER_U or b4 ~= ASCII_LOWER_E then
-        error("expected true, got t" .. toCharNullsafe(b2) .. toCharNullsafe(b3) .. toCharNullsafe(b4))
-    end
-
-    ctx.nextCodepoint()
+    ctx.setPosition(endpos + 1)
     return true
 end
 
-local function parseFalse(ctx)
-    if ctx.currentCodepoint ~= ASCII_LOWER_F then error("expected start of false, got " .. toCharNullsafe(ctx.currentCodepoint)) end
-
-    local b2 = ctx.nextCodepoint()
-    local b3 = ctx.nextCodepoint()
-    local b4 = ctx.nextCodepoint()
-    local b5 = ctx.nextCodepoint()
-
-    if b2 ~= ASCII_LOWER_A or b3 ~= ASCII_LOWER_L or b4 ~= ASCII_LOWER_S or b5 ~= ASCII_LOWER_E then
-        error("expected false, got f" .. toCharNullsafe(b2) .. toCharNullsafe(b3) .. toCharNullsafe(b4) .. toCharNullsafe(b5))
+parseFalse = function(ctx)
+    local endpos = ctx.pos + 4
+    local token = substring(ctx.buffer, ctx.pos, endpos)
+    if token ~= "false" then
+        error("expected false, got " .. token)
     end
-
-    ctx.nextCodepoint()
+    ctx.setPosition(endpos + 1)
     return false
 end
 
-local function parseNull(ctx)
-    if ctx.currentCodepoint ~= ASCII_LOWER_N then error("expected start of null, got " .. toCharNullsafe(ctx.currentCodepoint)) end
-    local b2 = ctx.nextCodepoint()
-    local b3 = ctx.nextCodepoint()
-    local b4 = ctx.nextCodepoint()
-
-    if b2 ~= ASCII_LOWER_U or b3 ~= ASCII_LOWER_L or b4 ~= ASCII_LOWER_L then
-        error("expected null, got n" .. toCharNullsafe(b2) .. toCharNullsafe(b3) .. toCharNullsafe(b4))
+parseNull = function(ctx)
+    local endpos = ctx.pos + 3
+    local token = substring(ctx.buffer, ctx.pos, endpos)
+    if token ~= "null" then
+        error("expected null, got " .. token)
     end
-
-    ctx.nextCodepoint()
+    ctx.setPosition(endpos + 1)
     return nil
 end
 
-local function parseNumber(ctx)
+parseNumber = function(ctx)
     if ctx.currentCodepoint ~= ASCII_MINUS and not validDigits[ctx.currentCodepoint] then
         error("expected start of number, got " .. ctx.currentChar())
     end
 
-    local tbl = {}
-    local tblPos = 1
+    local startPos = ctx.pos
     while true do
-        local char = numberCharacterCodepointToCharacter[ctx.currentCodepoint]
-        if char == nil then
+        if not validNumberCharacters[ctx.currentCodepoint] then
             break
         end
-        tbl[tblPos] = char
-        tblPos = tblPos + 1
         ctx.nextCodepoint()
     end
 
-    local s = table.concat(tbl)
+    local s = substring(ctx.buffer, startPos, ctx.pos - 1)
     local n = tonumber(s)
-
     if n == nil then error("not a number: " .. s) end
     return n
 end
 
-local hexCharCodepointToHexValue = {
-    [ASCII_0] = 0,
-    [ASCII_1] = 1,
-    [ASCII_2] = 2,
-    [ASCII_3] = 3,
-    [ASCII_4] = 4,
-    [ASCII_5] = 5,
-    [ASCII_6] = 6,
-    [ASCII_7] = 7,
-    [ASCII_8] = 8,
-    [ASCII_9] = 9,
-    [ASCII_UPPER_A] = 10,
-    [ASCII_UPPER_B] = 11,
-    [ASCII_UPPER_C] = 12,
-    [ASCII_UPPER_D] = 13,
-    [ASCII_UPPER_E] = 14,
-    [ASCII_UPPER_F] = 15,
-    [ASCII_LOWER_A] = 10,
-    [ASCII_LOWER_B] = 11,
-    [ASCII_LOWER_C] = 12,
-    [ASCII_LOWER_D] = 13,
-    [ASCII_LOWER_E] = 14,
-    [ASCII_LOWER_F] = 15,
-}
-
-local function parseUnicodeSeq(u1, u2, u3, u4)
-    local sum = hexCharCodepointToHexValue[u1] * 4096
-        + hexCharCodepointToHexValue[u2] * 256
-        + hexCharCodepointToHexValue[u3] * 16
-        + hexCharCodepointToHexValue[u4]
-
-    return string.char(sum)
-end
-
-local function parseString(ctx)
+parseString = function(ctx)
     if ctx.currentCodepoint ~= ASCII_DOUBLE_QUOTE then error("expected start of string, got " .. ctx.currentChar()) end
     ctx.nextCodepoint()
-    local done = false
-    local escaped = false
     local sb = {}
     local sbPos = 1
-    local push = function(s)
-        sb[sbPos] = s
-        sbPos = sbPos + 1
-    end
+    local lastSegmentStart = ctx.pos
 
-    while not done do
+    while true do
         local b = ctx.currentCodepoint
-        if escaped then
-            if b == ASCII_DOUBLE_QUOTE then
-                push("\"")
-            elseif b == ASCII_BACKSLASH then
-                push("\\")
-            elseif b == ASCII_FORWARDSLASH then
-                push("/")
-            elseif b == ASCII_LOWER_N then
-                push("\n")
-            elseif b == ASCII_LOWER_U then
-                local char = parseUnicodeSeq(
-                    ctx.nextCodepoint(),
-                    ctx.nextCodepoint(),
-                    ctx.nextCodepoint(),
-                    ctx.nextCodepoint()
-                )
-                push(char)
-            elseif b == ASCII_LOWER_R then
-                push("\r")
-            elseif b == ASCII_LOWER_T then
-                push("\t")
-            elseif b == ASCII_LOWER_B then
-                push("\b")
-            elseif b == ASCII_LOWER_F then
-                push("\f")
-            else
-                error("unsupported escaped symbol " .. ctx.currentChar())
+        if b == ASCII_BACKSLASH then
+            -- Append the segment of non-escaped characters so far
+            if lastSegmentStart < ctx.pos then
+                sb[sbPos] = substring(ctx.buffer, lastSegmentStart, ctx.pos - 1)
+                sbPos = sbPos + 1
             end
-            escaped = false
-        elseif b == ASCII_BACKSLASH then
-            escaped = true
+
+            -- Handle the escaped character
+            b = ctx.nextCodepoint()
+            if b == ASCII_LOWER_U then
+                -- converts four hex digits after a "\u" to a unicode symbol and places cursor to char after last digit
+                local hex = substring(ctx.buffer, ctx.pos + 1, ctx.pos + 4)
+                if #hex ~= 4 then error("invalid unicode escape sequence: \\u" .. hex) end
+                local n = tonumber(hex, 16)
+                if n == nil then error("not a hex number: " .. hex) end
+                sb[sbPos] = tochar(n)
+                ctx.setPosition(ctx.pos + 4)
+            else
+                local substitute = escapedCharactersSubstitutions[b]
+                if substitute ~= nil then
+                    sb[sbPos] = substitute
+                else
+                    error("unsupported escaped symbol " .. ctx.currentChar())
+                end
+            end
+            sbPos = sbPos + 1
+            lastSegmentStart = ctx.pos + 1 -- Start next segment after the escaped char
         elseif b == ASCII_DOUBLE_QUOTE then
-            done = true
-        elseif b == nil then
-            error("json is not terminated properly")
-        elseif b <= 0x1f or b == 0x7F then
+            -- End of string, append the final segment
+            if lastSegmentStart < ctx.pos then
+                sb[sbPos] = substring(ctx.buffer, lastSegmentStart, ctx.pos - 1)
+            end
+            ctx.nextCodepoint()
+            return concat(sb)
+        elseif illegalControlCharactersInsideStrings[b] then
             error("unescaped control character encountered: 0x" .. string.format("%02X", b))
         else
-            push(string.char(b))
         end
         ctx.nextCodepoint()
     end
-
-    return table.concat(sb)
-end
-
-local function parseValue(ctx)
-    local b = ctx.currentCodepoint
-    local value
-
-    if b == ASCII_DOUBLE_QUOTE then
-        value = parseString(ctx)
-    elseif b == ASCII_OPENING_CURLY_BRACE then
-        value = parseObject(ctx)
-    elseif b == ASCII_OPENING_SQARE_BRACKET then
-        value = parseArray(ctx)
-    elseif b == ASCII_LOWER_T then
-        value = parseTrue(ctx)
-    elseif b == ASCII_LOWER_F then
-        value = parseFalse(ctx)
-    elseif b == ASCII_MINUS or validDigits[b] then
-        value = parseNumber(ctx)
-    elseif b == ASCII_LOWER_N then
-        value = parseNull(ctx)
-    else
-        error("expected start of a value, got " .. ctx.currentChar())
-    end
-
-    ctx.skipWhiteSpace()
-
-    return value
 end
 
 parseObject = function(ctx)
@@ -352,11 +321,41 @@ parseArray = function(ctx)
     return tbl
 end
 
+local valuePrefixToValueHandlers = {
+    [ASCII_DOUBLE_QUOTE] = parseString,
+    [ASCII_MINUS] = parseNumber,
+    [ASCII_0] = parseNumber,
+    [ASCII_1] = parseNumber,
+    [ASCII_2] = parseNumber,
+    [ASCII_3] = parseNumber,
+    [ASCII_4] = parseNumber,
+    [ASCII_5] = parseNumber,
+    [ASCII_6] = parseNumber,
+    [ASCII_7] = parseNumber,
+    [ASCII_8] = parseNumber,
+    [ASCII_9] = parseNumber,
+    [ASCII_LOWER_T] = parseTrue,
+    [ASCII_LOWER_F] = parseFalse,
+    [ASCII_LOWER_N] = parseNull,
+    [ASCII_OPENING_CURLY_BRACE] = parseObject,
+    [ASCII_OPENING_SQARE_BRACKET] = parseArray,
+}
+
+parseValue = function(ctx)
+    local handler = valuePrefixToValueHandlers[ctx.currentCodepoint]
+    if handler == nil then
+        error("expected start of a value, got " .. ctx.currentChar())
+    end
+
+    local value = handler(ctx)
+    ctx.skipWhiteSpace()
+    return value
+end
+
 function module.parse(str)
     local ctx = {}
     ctx.pos = 1
     ctx.buffer = str
-    ctx.bufferLen = #str
     ctx.currentCodepoint = unicode(str, 1)
     ctx.nextCodepoint = function()
         if ctx.currentCodepoint == nil then error("json is not terminated properly") end
@@ -364,19 +363,18 @@ function module.parse(str)
         ctx.currentCodepoint = unicode(ctx.buffer, ctx.pos)
         return ctx.currentCodepoint
     end
+    ctx.setPosition = function(pos)
+        ctx.pos = pos
+        ctx.currentCodepoint = unicode(str, pos)
+    end
     ctx.currentChar = function()
         local b = ctx.currentCodepoint
         if (b == nil) then return "" end
-        return string.char(b)
+        return tochar(b)
     end
     ctx.skipWhiteSpace = function()
         local b = ctx.currentCodepoint
-        while
-            b == ASCII_SPACE
-            or b == ASCII_HORIZONTAL_TAB
-            or b == ASCII_LINE_FEED
-            or b == ASCII_CARRIAGE_RETURN
-        do
+        while whiteSpaceCharacters[b] do
             b = ctx.nextCodepoint()
         end
     end

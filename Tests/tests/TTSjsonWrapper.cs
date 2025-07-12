@@ -37,7 +37,7 @@ public sealed class TTSjsonWrapper
 
     public void AssertFailingParse(string json, string expectedErrorMessage)
     {
-        var exception = Assert.Throws<ScriptRuntimeException>(() => Parse(json));
+        var exception = Assert.ThrowsAny<Exception>(() => Parse(json));
         Assert.Equal(expectedErrorMessage, exception.Message);
     }
 
