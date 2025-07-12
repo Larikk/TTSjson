@@ -89,7 +89,7 @@ public class StringFailingParseTests
     public void ShouldFailOnSurrogateThenEscapeU()
     {
         var json = Q("\\uD800\\u");
-        var expectedErrorMessage = "json is not terminated properly";
+        var expectedErrorMessage = "invalid unicode escape sequence: \\u\"";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -97,7 +97,7 @@ public class StringFailingParseTests
     public void ShouldFailOnSurrogateThenEscapeU1()
     {
         var json = Q("\\uD800\\u1");
-        var expectedErrorMessage = "json is not terminated properly";
+        var expectedErrorMessage = "invalid unicode escape sequence: \\u1\"";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -105,7 +105,7 @@ public class StringFailingParseTests
     public void ShouldFailOnSurrogateThenEscapeU1x()
     {
         var json = Q("\\uD800\\u1x");
-        var expectedErrorMessage = "attempt to perform arithmetic on a nil value";
+        var expectedErrorMessage = "invalid unicode escape sequence: \\u1x\"";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -177,7 +177,7 @@ public class StringFailingParseTests
     public void ShouldFailOnIncompleteEscapedCharacter()
     {
         var json = Q("\\u00A");
-        var expectedErrorMessage = "attempt to perform arithmetic on a nil value";
+        var expectedErrorMessage = "Additional non-parsable characters are at the end of the string.";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -209,7 +209,7 @@ public class StringFailingParseTests
     public void ShouldFailOnInvalidUnicodeEscape()
     {
         var json = Q("\\uqqqq");
-        var expectedErrorMessage = "attempt to perform arithmetic on a nil value";
+        var expectedErrorMessage = "Could not find any recognizable digits.";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -225,7 +225,7 @@ public class StringFailingParseTests
     public void ShouldFailOnInvalidUtf8InEscape()
     {
         var json = Q("\\u\xFFFD");
-        var expectedErrorMessage = "json is not terminated properly";
+        var expectedErrorMessage = "invalid unicode escape sequence: \\u�\"";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
