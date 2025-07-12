@@ -40,7 +40,7 @@ public class GeneralFailingParseTests
     public void ShouldFailOnCapitalizedTrue()
     {
         var json = "True";
-        var expectedErrorMessage = "expected start of a value, got T";
+        var expectedErrorMessage = "expected start of a value, got 'T'";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -48,7 +48,7 @@ public class GeneralFailingParseTests
     public void ShouldFailOnEmptyString()
     {
         var json = "";
-        var expectedErrorMessage = "expected start of a value, got ";
+        var expectedErrorMessage = "expected start of a value, got ''";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -56,7 +56,7 @@ public class GeneralFailingParseTests
     public void ShouldFailOnJustSpace()
     {
         var json = " ";
-        var expectedErrorMessage = "expected start of a value, got ";
+        var expectedErrorMessage = "expected start of a value, got ''";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -64,7 +64,7 @@ public class GeneralFailingParseTests
     public void ShouldFailOnJustNewLine()
     {
         var json = "\n";
-        var expectedErrorMessage = "expected start of a value, got ";
+        var expectedErrorMessage = "expected start of a value, got ''";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -72,7 +72,7 @@ public class GeneralFailingParseTests
     public void ShouldFailOnLotsOfOpeningBrackets()
     {
         var json = "[".Repeat(10_000);
-        var expectedErrorMessage = "expected start of a value, got ";
+        var expectedErrorMessage = "expected start of a value, got ''";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -80,7 +80,7 @@ public class GeneralFailingParseTests
     public void ShouldFailOnInvalidDeeplyNestedStructture()
     {
         var json = "[{\"\":".Repeat(1_000);
-        var expectedErrorMessage = "expected start of a value, got ";
+        var expectedErrorMessage = "expected start of a value, got ''";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -88,7 +88,7 @@ public class GeneralFailingParseTests
     public void ShouldFailOnAngleBrackets()
     {
         var json = "<.>";
-        var expectedErrorMessage = "expected start of a value, got <";
+        var expectedErrorMessage = "expected start of a value, got '<'";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -96,7 +96,7 @@ public class GeneralFailingParseTests
     public void ShouldFailOnAngleBracketsNull()
     {
         var json = "<null>";
-        var expectedErrorMessage = "expected start of a value, got <";
+        var expectedErrorMessage = "expected start of a value, got '<'";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 

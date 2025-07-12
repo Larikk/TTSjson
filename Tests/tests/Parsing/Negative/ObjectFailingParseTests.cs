@@ -32,7 +32,7 @@ public class ObjectFailingParseTests
     public void ShouldFailOnDoubleConol()
     {
         var json = """{"x"::"b"}""";
-        var expectedErrorMessage = "expected start of a value, got :";
+        var expectedErrorMessage = "expected start of a value, got ':'";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -56,7 +56,7 @@ public class ObjectFailingParseTests
     public void ShouldFailOnSingleQuotesInValue()
     {
         var json = """{"key": 'value'}""";
-        var expectedErrorMessage = "expected start of a value, got '";
+        var expectedErrorMessage = "expected start of a value, got '''";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -80,7 +80,7 @@ public class ObjectFailingParseTests
     public void ShouldFailOnMissingValue()
     {
         var json = """{"a":""";
-        var expectedErrorMessage = "expected start of a value, got ";
+        var expectedErrorMessage = "expected start of a value, got ''";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 

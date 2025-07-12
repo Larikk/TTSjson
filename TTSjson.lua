@@ -336,13 +336,12 @@ local valuePrefixToValueHandlers = {
 
 parseValue = function(ctx)
     local handler = valuePrefixToValueHandlers[ctx.currentCodepoint]
-    if handler == nil then
-        error("expected start of a value, got " .. ctx.currentChar())
+    if handler ~= nil then
+        local value = handler(ctx)
+        ctx.skipWhiteSpace()
+        return value
     end
-
-    local value = handler(ctx)
-    ctx.skipWhiteSpace()
-    return value
+    errorf("expected start of a value, got '%s'", ctx.currentChar())
 end
 
 function module.parse(str)

@@ -9,7 +9,7 @@ public class StringFailingParseTests
     public void ShouldFailOnNoQuotesWithBadEscape()
     {
         var json = "\\n";
-        var expectedErrorMessage = "expected start of a value, got \\";
+        var expectedErrorMessage = "expected start of a value, got '\\'";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -25,7 +25,7 @@ public class StringFailingParseTests
     public void ShouldFailOnSingleQuotes()
     {
         var json = "'single quote'";
-        var expectedErrorMessage = "expected start of a value, got '";
+        var expectedErrorMessage = "expected start of a value, got '''";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -33,7 +33,7 @@ public class StringFailingParseTests
     public void ShouldFailOnStringWithNoDoublequotes()
     {
         var json = "abc";
-        var expectedErrorMessage = "expected start of a value, got a";
+        var expectedErrorMessage = "expected start of a value, got 'a'";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -49,7 +49,7 @@ public class StringFailingParseTests
     public void ShouldFailOnUnescapedControlChar()
     {
         var json = "a\x00a";
-        var expectedErrorMessage = "expected start of a value, got a";
+        var expectedErrorMessage = "expected start of a value, got 'a'";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -121,7 +121,7 @@ public class StringFailingParseTests
     public void ShouldFailOnAccentedCharacterWihoutQuotes()
     {
         var json = "é";
-        var expectedErrorMessage = "expected start of a value, got é";
+        var expectedErrorMessage = "expected start of a value, got 'é'";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -129,7 +129,7 @@ public class StringFailingParseTests
     public void ShouldFailOnUnquotedUnicodeSequence()
     {
         var json = "\xFFFD";
-        var expectedErrorMessage = "expected start of a value, got \xFFFD";
+        var expectedErrorMessage = "expected start of a value, got '\xFFFD'";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -233,7 +233,7 @@ public class StringFailingParseTests
     public void ShouldFailOnLeadingUnescapedThinspace()
     {
         var json = "\\u0020\"asd\"";
-        var expectedErrorMessage = "expected start of a value, got \\";
+        var expectedErrorMessage = "expected start of a value, got '\\'";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
