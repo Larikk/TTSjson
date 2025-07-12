@@ -16,7 +16,7 @@ public class NumberFailingParseTests
     public void ShouldFailOnLeadingDot()
     {
         var json = ".-1";
-        var expectedErrorMessage = "expected start of a value, got .";
+        var expectedErrorMessage = "expected start of a value, got '.'";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -33,17 +33,17 @@ public class NumberFailingParseTests
     [InlineData("++1")]
     public void ShouldFailOnLeadingPlus(string json)
     {
-        var expectedErrorMessage = "expected start of a value, got +";
+        var expectedErrorMessage = "expected start of a value, got '+'";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
     [Theory]
-    [InlineData("Nan", "expected start of a value, got N")]
-    [InlineData("Inf", "expected start of a value, got I")]
-    [InlineData("+Nan", "expected start of a value, got +")]
-    [InlineData("+Inf", "expected start of a value, got +")]
-    [InlineData("-Nan", "not a number: -")]
-    [InlineData("-Inf", "not a number: -")]
+    [InlineData("Nan", "expected start of a value, got 'N'")]
+    [InlineData("Inf", "expected start of a value, got 'I'")]
+    [InlineData("+Nan", "expected start of a value, got '+'")]
+    [InlineData("+Inf", "expected start of a value, got '+'")]
+    [InlineData("-Nan", "not a number: '-'")]
+    [InlineData("-Inf", "not a number: '-'")]
     public void ShouldFailOnNonOrInf(string json, string expectedErrorMessage)
     {
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
@@ -72,7 +72,7 @@ public class NumberFailingParseTests
     [InlineData("9.e+")]
     public void ShouldFailOnInvalidNumbers(string json)
     {
-        var expectedErrorMessage = "not a number: " + json;
+        var expectedErrorMessage = "not a number: '" + json + "'";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -96,7 +96,7 @@ public class NumberFailingParseTests
     public void ShouldFailOnSpaceAfterMinus()
     {
         var json = "- 1";
-        var expectedErrorMessage = "not a number: -";
+        var expectedErrorMessage = "not a number: '-'";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 

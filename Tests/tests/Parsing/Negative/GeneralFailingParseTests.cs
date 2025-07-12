@@ -8,7 +8,7 @@ public class GeneralFailingParseTests
     public void ShouldFailOnIncompleteNull()
     {
         var json = "nul";
-        var expectedErrorMessage = "expected null, got nul";
+        var expectedErrorMessage = "expected null, got 'nul'";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -16,7 +16,7 @@ public class GeneralFailingParseTests
     public void ShouldFailOnIncompleteFalse()
     {
         var json = "fale";
-        var expectedErrorMessage = "expected false, got fale";
+        var expectedErrorMessage = "expected false, got 'fale'";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -24,7 +24,7 @@ public class GeneralFailingParseTests
     public void ShouldFailOnIncompleteTrue()
     {
         var json = "tr";
-        var expectedErrorMessage = "expected true, got tr";
+        var expectedErrorMessage = "expected true, got 'tr'";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -40,7 +40,7 @@ public class GeneralFailingParseTests
     public void ShouldFailOnCapitalizedTrue()
     {
         var json = "True";
-        var expectedErrorMessage = "expected start of a value, got T";
+        var expectedErrorMessage = "expected start of a value, got 'T'";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -48,7 +48,7 @@ public class GeneralFailingParseTests
     public void ShouldFailOnEmptyString()
     {
         var json = "";
-        var expectedErrorMessage = "expected start of a value, got ";
+        var expectedErrorMessage = "expected start of a value, got ''";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -56,7 +56,7 @@ public class GeneralFailingParseTests
     public void ShouldFailOnJustSpace()
     {
         var json = " ";
-        var expectedErrorMessage = "expected start of a value, got ";
+        var expectedErrorMessage = "expected start of a value, got ''";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -64,7 +64,7 @@ public class GeneralFailingParseTests
     public void ShouldFailOnJustNewLine()
     {
         var json = "\n";
-        var expectedErrorMessage = "expected start of a value, got ";
+        var expectedErrorMessage = "expected start of a value, got ''";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -72,7 +72,7 @@ public class GeneralFailingParseTests
     public void ShouldFailOnLotsOfOpeningBrackets()
     {
         var json = "[".Repeat(10_000);
-        var expectedErrorMessage = "expected start of a value, got ";
+        var expectedErrorMessage = "expected start of a value, got ''";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -80,7 +80,7 @@ public class GeneralFailingParseTests
     public void ShouldFailOnInvalidDeeplyNestedStructture()
     {
         var json = "[{\"\":".Repeat(1_000);
-        var expectedErrorMessage = "expected start of a value, got ";
+        var expectedErrorMessage = "expected start of a value, got ''";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -88,7 +88,7 @@ public class GeneralFailingParseTests
     public void ShouldFailOnAngleBrackets()
     {
         var json = "<.>";
-        var expectedErrorMessage = "expected start of a value, got <";
+        var expectedErrorMessage = "expected start of a value, got '<'";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -96,7 +96,7 @@ public class GeneralFailingParseTests
     public void ShouldFailOnAngleBracketsNull()
     {
         var json = "<null>";
-        var expectedErrorMessage = "expected start of a value, got <";
+        var expectedErrorMessage = "expected start of a value, got '<'";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -112,7 +112,7 @@ public class GeneralFailingParseTests
     public void ShouldFailOnOpenArrayOpenObject()
     {
         var json = "[{";
-        var expectedErrorMessage = "expected start of string, got ";
+        var expectedErrorMessage = "expected start of object key, got ''";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -128,7 +128,7 @@ public class GeneralFailingParseTests
     public void ShouldFailOnOpenArrayString()
     {
         var json = "[\"a\"";
-        var expectedErrorMessage = "expected ',' or ']' after array value but got ";
+        var expectedErrorMessage = "expected ',' or ']' after array value, got ''";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -136,7 +136,7 @@ public class GeneralFailingParseTests
     public void ShouldFailOnOpenObjectCloseArray()
     {
         var json = "{]";
-        var expectedErrorMessage = "expected start of string, got ]";
+        var expectedErrorMessage = "expected start of object key, got ']'";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -144,7 +144,7 @@ public class GeneralFailingParseTests
     public void ShouldFailOnOpenObjectComma()
     {
         var json = "{,";
-        var expectedErrorMessage = "expected start of string, got ,";
+        var expectedErrorMessage = "expected start of object key, got ','";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -152,7 +152,7 @@ public class GeneralFailingParseTests
     public void ShouldFailOnOpenObjectOpenArray()
     {
         var json = "{[";
-        var expectedErrorMessage = "expected start of string, got [";
+        var expectedErrorMessage = "expected start of object key, got '['";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -168,7 +168,7 @@ public class GeneralFailingParseTests
     public void ShouldFailOnOpenObjectStringWithApostrophes()
     {
         var json = "{'a'";
-        var expectedErrorMessage = "expected start of string, got '";
+        var expectedErrorMessage = "expected start of object key, got '''";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -176,7 +176,7 @@ public class GeneralFailingParseTests
     public void ShouldFailOnUnclosedArrayPartialNull()
     {
         var json = "[false, nul";
-        var expectedErrorMessage = "expected null, got nul";
+        var expectedErrorMessage = "expected null, got 'nul'";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -184,7 +184,7 @@ public class GeneralFailingParseTests
     public void ShouldFailOnUnclosedArrayUnfinishedNull()
     {
         var json = "[true, fals]";
-        var expectedErrorMessage = "expected false, got fals]";
+        var expectedErrorMessage = "expected false, got 'fals]'";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 

@@ -149,11 +149,13 @@ local parseValue
 local parseObject
 local parseArray
 
+local errorf = function(s, ...) error(format(s, ...)) end
+
 parseTrue = function(ctx)
     local endpos = ctx.pos + 3
     local token = substring(ctx.buffer, ctx.pos, endpos)
     if token ~= "true" then
-        error("expected true, got " .. token)
+        errorf("expected true, got '%s'", token)
     end
     ctx.setPosition(endpos + 1)
     return true
@@ -163,7 +165,7 @@ parseFalse = function(ctx)
     local endpos = ctx.pos + 4
     local token = substring(ctx.buffer, ctx.pos, endpos)
     if token ~= "false" then
-        error("expected false, got " .. token)
+        errorf("expected false, got '%s'", token)
     end
     ctx.setPosition(endpos + 1)
     return false
@@ -173,17 +175,13 @@ parseNull = function(ctx)
     local endpos = ctx.pos + 3
     local token = substring(ctx.buffer, ctx.pos, endpos)
     if token ~= "null" then
-        error("expected null, got " .. token)
+        errorf("expected null, got '%s'", token)
     end
     ctx.setPosition(endpos + 1)
     return nil
 end
 
 parseNumber = function(ctx)
-    if ctx.currentCodepoint ~= ASCII_MINUS and not validDigits[ctx.currentCodepoint] then
-        error("expected start of number, got " .. ctx.currentChar())
-    end
-
     local startPos = ctx.pos
     while true do
         if not validNumberCharacters[ctx.currentCodepoint] then
@@ -194,12 +192,11 @@ parseNumber = function(ctx)
 
     local s = substring(ctx.buffer, startPos, ctx.pos - 1)
     local n = tonumber(s)
-    if n == nil then error("not a number: " .. s) end
+    if n == nil then errorf("not a number: '%s'", s) end
     return n
 end
 
 parseString = function(ctx)
-    if ctx.currentCodepoint ~= ASCII_DOUBLE_QUOTE then error("expected start of string, got " .. ctx.currentChar()) end
     ctx.nextCodepoint()
     local sb = {}
     local sbPos = 1
@@ -219,7 +216,7 @@ parseString = function(ctx)
             if b == ASCII_LOWER_U then
                 -- converts four hex digits after a "\u" to a unicode symbol and places cursor to char after last digit
                 local hex = substring(ctx.buffer, ctx.pos + 1, ctx.pos + 4)
-                if #hex ~= 4 then error("invalid unicode escape sequence: \\u" .. hex) end
+                if #hex ~= 4 then errorf("invalid unicode escape sequence: '\\u%s'", hex) end
                 local n = tonumber(hex, 16)
                 if n == nil then error("not a hex number: " .. hex) end
                 sb[sbPos] = tochar(n)
@@ -229,7 +226,7 @@ parseString = function(ctx)
                 if substitute ~= nil then
                     sb[sbPos] = substitute
                 else
-                    error("unsupported escaped symbol " .. ctx.currentChar())
+                    errorf("unsupported escaped symbol: '%s'", ctx.currentChar())
                 end
             end
             sbPos = sbPos + 1
@@ -242,7 +239,7 @@ parseString = function(ctx)
             ctx.nextCodepoint()
             return concat(sb)
         elseif illegalControlCharactersInsideStrings[b] then
-            error("unescaped control character encountered: 0x" .. string.format("%02X", b))
+            errorf("unescaped control character encountered: 0x%02X", b)
         else
         end
         ctx.nextCodepoint()
@@ -250,7 +247,6 @@ parseString = function(ctx)
 end
 
 parseObject = function(ctx)
-    if ctx.currentCodepoint ~= ASCII_OPENING_CURLY_BRACE then error("expected start of object, got " .. ctx.currentChar()) end
     ctx.nextCodepoint()
     ctx.skipWhiteSpace()
 
@@ -263,9 +259,10 @@ parseObject = function(ctx)
     local obj = {}
 
     while true do
+        if ctx.currentCodepoint ~= ASCII_DOUBLE_QUOTE then errorf("expected start of object key, got '%s'", ctx.currentChar()) end
         local key = parseString(ctx)
         ctx.skipWhiteSpace()
-        if ctx.currentCodepoint ~= ASCII_COLON then error("expected :, got " .. ctx.currentChar()) end
+        if ctx.currentCodepoint ~= ASCII_COLON then errorf("expected ':', got '%s'", ctx.currentChar()) end
         ctx.nextCodepoint()
         ctx.skipWhiteSpace()
         local value = parseValue(ctx)
@@ -278,7 +275,7 @@ parseObject = function(ctx)
             ctx.skipWhiteSpace()
             return obj
         else
-            error("expected ',' or '}' after object value but got " .. ctx.currentChar())
+            errorf("expected ',' or '}' after object value, got '%s'", ctx.currentChar())
         end
     end
 
@@ -286,10 +283,6 @@ parseObject = function(ctx)
 end
 
 parseArray = function(ctx)
-    if ctx.currentCodepoint ~= ASCII_OPENING_SQARE_BRACKET then
-        error("expected start of array, got " ..
-            ctx.currentChar())
-    end
     ctx.nextCodepoint()
     ctx.skipWhiteSpace()
 
@@ -314,7 +307,7 @@ parseArray = function(ctx)
             ctx.skipWhiteSpace()
             return tbl
         else
-            error("expected ',' or ']' after array value but got " .. ctx.currentChar())
+            errorf("expected ',' or ']' after array value, got '%s'", ctx.currentChar())
         end
     end
 
@@ -343,13 +336,12 @@ local valuePrefixToValueHandlers = {
 
 parseValue = function(ctx)
     local handler = valuePrefixToValueHandlers[ctx.currentCodepoint]
-    if handler == nil then
-        error("expected start of a value, got " .. ctx.currentChar())
+    if handler ~= nil then
+        local value = handler(ctx)
+        ctx.skipWhiteSpace()
+        return value
     end
-
-    local value = handler(ctx)
-    ctx.skipWhiteSpace()
-    return value
+    errorf("expected start of a value, got '%s'", ctx.currentChar())
 end
 
 function module.parse(str)
