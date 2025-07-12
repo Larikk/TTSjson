@@ -42,8 +42,8 @@ public class NumberFailingParseTests
     [InlineData("Inf", "expected start of a value, got I")]
     [InlineData("+Nan", "expected start of a value, got +")]
     [InlineData("+Inf", "expected start of a value, got +")]
-    [InlineData("-Nan", "not a number: -")]
-    [InlineData("-Inf", "not a number: -")]
+    [InlineData("-Nan", "not a number: '-'")]
+    [InlineData("-Inf", "not a number: '-'")]
     public void ShouldFailOnNonOrInf(string json, string expectedErrorMessage)
     {
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
@@ -72,7 +72,7 @@ public class NumberFailingParseTests
     [InlineData("9.e+")]
     public void ShouldFailOnInvalidNumbers(string json)
     {
-        var expectedErrorMessage = "not a number: " + json;
+        var expectedErrorMessage = "not a number: '" + json + "'";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 

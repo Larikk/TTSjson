@@ -192,7 +192,7 @@ parseNumber = function(ctx)
 
     local s = substring(ctx.buffer, startPos, ctx.pos - 1)
     local n = tonumber(s)
-    if n == nil then error("not a number: " .. s) end
+    if n == nil then errorf("not a number: '%s'", s) end
     return n
 end
 
