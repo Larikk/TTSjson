@@ -199,40 +199,6 @@ parseNumber = function(ctx)
     return n
 end
 
-local hexCharCodepointToHexValue = {
-    [ASCII_0] = 0,
-    [ASCII_1] = 1,
-    [ASCII_2] = 2,
-    [ASCII_3] = 3,
-    [ASCII_4] = 4,
-    [ASCII_5] = 5,
-    [ASCII_6] = 6,
-    [ASCII_7] = 7,
-    [ASCII_8] = 8,
-    [ASCII_9] = 9,
-    [ASCII_UPPER_A] = 10,
-    [ASCII_UPPER_B] = 11,
-    [ASCII_UPPER_C] = 12,
-    [ASCII_UPPER_D] = 13,
-    [ASCII_UPPER_E] = 14,
-    [ASCII_UPPER_F] = 15,
-    [ASCII_LOWER_A] = 10,
-    [ASCII_LOWER_B] = 11,
-    [ASCII_LOWER_C] = 12,
-    [ASCII_LOWER_D] = 13,
-    [ASCII_LOWER_E] = 14,
-    [ASCII_LOWER_F] = 15,
-}
-
-parseUnicodeSeq = function(u1, u2, u3, u4)
-    local sum = hexCharCodepointToHexValue[u1] * 4096
-        + hexCharCodepointToHexValue[u2] * 256
-        + hexCharCodepointToHexValue[u3] * 16
-        + hexCharCodepointToHexValue[u4]
-
-    return tochar(sum)
-end
-
 parseString = function(ctx)
     if ctx.currentCodepoint ~= ASCII_DOUBLE_QUOTE then error("expected start of string, got " .. ctx.currentChar()) end
     ctx.nextCodepoint()
@@ -252,12 +218,13 @@ parseString = function(ctx)
             -- Handle the escaped character
             b = ctx.nextCodepoint()
             if b == ASCII_LOWER_U then
-                sb[sbPos] = parseUnicodeSeq(
-                    ctx.nextCodepoint(),
-                    ctx.nextCodepoint(),
-                    ctx.nextCodepoint(),
-                    ctx.nextCodepoint()
-                )
+                -- converts four hex digits after a "\u" to a unicode symbol and places cursor to char after last digit
+                local hex = substring(ctx.buffer, ctx.pos + 1, ctx.pos + 4)
+                if #hex ~= 4 then error("invalid unicode escape sequence: \\u" .. hex) end
+                local n = tonumber(hex, 16)
+                if n == nil then error("not a hex number: " .. hex) end
+                sb[sbPos] = tochar(n)
+                ctx.setPosition(ctx.pos + 4)
             else
                 local substitute = escapedCharactersSubstitutions[b]
                 if substitute ~= nil then
