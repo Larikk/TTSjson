@@ -149,11 +149,13 @@ local parseValue
 local parseObject
 local parseArray
 
+local errorf = function(s, ...) error(format(s, ...)) end
+
 parseTrue = function(ctx)
     local endpos = ctx.pos + 3
     local token = substring(ctx.buffer, ctx.pos, endpos)
     if token ~= "true" then
-        error("expected true, got " .. token)
+        errorf("expected true, got '%s'", token)
     end
     ctx.setPosition(endpos + 1)
     return true
@@ -163,7 +165,7 @@ parseFalse = function(ctx)
     local endpos = ctx.pos + 4
     local token = substring(ctx.buffer, ctx.pos, endpos)
     if token ~= "false" then
-        error("expected false, got " .. token)
+        errorf("expected false, got '%s'", token)
     end
     ctx.setPosition(endpos + 1)
     return false
@@ -173,7 +175,7 @@ parseNull = function(ctx)
     local endpos = ctx.pos + 3
     local token = substring(ctx.buffer, ctx.pos, endpos)
     if token ~= "null" then
-        error("expected null, got " .. token)
+        errorf("expected null, got '%s'", token)
     end
     ctx.setPosition(endpos + 1)
     return nil

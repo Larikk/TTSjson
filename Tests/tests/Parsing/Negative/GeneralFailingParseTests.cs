@@ -8,7 +8,7 @@ public class GeneralFailingParseTests
     public void ShouldFailOnIncompleteNull()
     {
         var json = "nul";
-        var expectedErrorMessage = "expected null, got nul";
+        var expectedErrorMessage = "expected null, got 'nul'";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -16,7 +16,7 @@ public class GeneralFailingParseTests
     public void ShouldFailOnIncompleteFalse()
     {
         var json = "fale";
-        var expectedErrorMessage = "expected false, got fale";
+        var expectedErrorMessage = "expected false, got 'fale'";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -24,7 +24,7 @@ public class GeneralFailingParseTests
     public void ShouldFailOnIncompleteTrue()
     {
         var json = "tr";
-        var expectedErrorMessage = "expected true, got tr";
+        var expectedErrorMessage = "expected true, got 'tr'";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -176,7 +176,7 @@ public class GeneralFailingParseTests
     public void ShouldFailOnUnclosedArrayPartialNull()
     {
         var json = "[false, nul";
-        var expectedErrorMessage = "expected null, got nul";
+        var expectedErrorMessage = "expected null, got 'nul'";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -184,7 +184,7 @@ public class GeneralFailingParseTests
     public void ShouldFailOnUnclosedArrayUnfinishedNull()
     {
         var json = "[true, fals]";
-        var expectedErrorMessage = "expected false, got fals]";
+        var expectedErrorMessage = "expected false, got 'fals]'";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
