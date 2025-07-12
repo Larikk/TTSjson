@@ -8,7 +8,7 @@ public class ObjectFailingParseTests
     public void ShouldFailOnOpenObject()
     {
         var json = """{""";
-        var expectedErrorMessage = "expected start of string, got ";
+        var expectedErrorMessage = "expected start of object key, got ";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -16,7 +16,7 @@ public class ObjectFailingParseTests
     public void ShouldFailOnBracketAsKey()
     {
         var json = """{[: "x"}""";
-        var expectedErrorMessage = "expected start of string, got [";
+        var expectedErrorMessage = "expected start of object key, got [";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -48,7 +48,7 @@ public class ObjectFailingParseTests
     public void ShouldFailOnSingleQuotesInKey()
     {
         var json = """{'key':0}""";
-        var expectedErrorMessage = "expected start of string, got '";
+        var expectedErrorMessage = "expected start of object key, got '";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -64,7 +64,7 @@ public class ObjectFailingParseTests
     public void ShouldFailOnMissingKey()
     {
         var json = """{:"b"}""";
-        var expectedErrorMessage = "expected start of string, got :";
+        var expectedErrorMessage = "expected start of object key, got :";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -96,7 +96,7 @@ public class ObjectFailingParseTests
     public void ShouldFailOnNonStringKey()
     {
         var json = """{1:1}""";
-        var expectedErrorMessage = "expected start of string, got 1";
+        var expectedErrorMessage = "expected start of object key, got 1";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -104,7 +104,7 @@ public class ObjectFailingParseTests
     public void ShouldFailOnNonKeyStringButHugeNumberInstead()
     {
         var json = """{9999E9999:1}""";
-        var expectedErrorMessage = "expected start of string, got 9";
+        var expectedErrorMessage = "expected start of object key, got 9";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -112,7 +112,7 @@ public class ObjectFailingParseTests
     public void ShouldFailOnRepeatedNulls()
     {
         var json = """{null:null,null:null}""";
-        var expectedErrorMessage = "expected start of string, got n";
+        var expectedErrorMessage = "expected start of object key, got n";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -120,7 +120,7 @@ public class ObjectFailingParseTests
     public void ShouldFailOnTrailingComma()
     {
         var json = """{"id":0,}""";
-        var expectedErrorMessage = "expected start of string, got }";
+        var expectedErrorMessage = "expected start of object key, got }";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -128,7 +128,7 @@ public class ObjectFailingParseTests
     public void ShouldFailOnMultipleTrailingCommas()
     {
         var json = """{"id":0,,,,,}""";
-        var expectedErrorMessage = "expected start of string, got ,";
+        var expectedErrorMessage = "expected start of object key, got ,";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -136,7 +136,7 @@ public class ObjectFailingParseTests
     public void ShouldFailOnMultipleCommasInARow()
     {
         var json = """{"a":"b",,"c":"d"}""";
-        var expectedErrorMessage = "expected start of string, got ,";
+        var expectedErrorMessage = "expected start of object key, got ,";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -144,7 +144,7 @@ public class ObjectFailingParseTests
     public void ShouldFailOnUnqoutedKey()
     {
         var json = """{a: "b"}""";
-        var expectedErrorMessage = "expected start of string, got a";
+        var expectedErrorMessage = "expected start of object key, got a";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 

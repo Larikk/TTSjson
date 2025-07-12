@@ -112,7 +112,7 @@ public class GeneralFailingParseTests
     public void ShouldFailOnOpenArrayOpenObject()
     {
         var json = "[{";
-        var expectedErrorMessage = "expected start of string, got ";
+        var expectedErrorMessage = "expected start of object key, got ";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -136,7 +136,7 @@ public class GeneralFailingParseTests
     public void ShouldFailOnOpenObjectCloseArray()
     {
         var json = "{]";
-        var expectedErrorMessage = "expected start of string, got ]";
+        var expectedErrorMessage = "expected start of object key, got ]";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -144,7 +144,7 @@ public class GeneralFailingParseTests
     public void ShouldFailOnOpenObjectComma()
     {
         var json = "{,";
-        var expectedErrorMessage = "expected start of string, got ,";
+        var expectedErrorMessage = "expected start of object key, got ,";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -152,7 +152,7 @@ public class GeneralFailingParseTests
     public void ShouldFailOnOpenObjectOpenArray()
     {
         var json = "{[";
-        var expectedErrorMessage = "expected start of string, got [";
+        var expectedErrorMessage = "expected start of object key, got [";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -168,7 +168,7 @@ public class GeneralFailingParseTests
     public void ShouldFailOnOpenObjectStringWithApostrophes()
     {
         var json = "{'a'";
-        var expectedErrorMessage = "expected start of string, got '";
+        var expectedErrorMessage = "expected start of object key, got '";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
