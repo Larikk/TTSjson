@@ -104,7 +104,7 @@ public class ArrayFailingParseTests
     public void ShouldFailOnJustMinus()
     {
         var json = "[-]";
-        var expectedErrorMessage = "not a number: -";
+        var expectedErrorMessage = "not a number: '-'";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 

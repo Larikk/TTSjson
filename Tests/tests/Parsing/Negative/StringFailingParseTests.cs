@@ -41,7 +41,7 @@ public class StringFailingParseTests
     public void ShouldFailOnStartEscapeUnclosed()
     {
         var json = "\"\\";
-        var expectedErrorMessage = "unsupported escaped symbol ";
+        var expectedErrorMessage = "unsupported escaped symbol: ''";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -73,7 +73,7 @@ public class StringFailingParseTests
     public void ShouldFailOnUnicodeCapitalU()
     {
         var json = Q("\\UA66D");
-        var expectedErrorMessage = "unsupported escaped symbol U";
+        var expectedErrorMessage = "unsupported escaped symbol: 'U'";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -89,7 +89,7 @@ public class StringFailingParseTests
     public void ShouldFailOnSurrogateThenEscapeU()
     {
         var json = Q("\\uD800\\u");
-        var expectedErrorMessage = "invalid unicode escape sequence: \\u\"";
+        var expectedErrorMessage = "invalid unicode escape sequence: '\\u\"'";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -97,7 +97,7 @@ public class StringFailingParseTests
     public void ShouldFailOnSurrogateThenEscapeU1()
     {
         var json = Q("\\uD800\\u1");
-        var expectedErrorMessage = "invalid unicode escape sequence: \\u1\"";
+        var expectedErrorMessage = "invalid unicode escape sequence: '\\u1\"'";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -105,7 +105,7 @@ public class StringFailingParseTests
     public void ShouldFailOnSurrogateThenEscapeU1x()
     {
         var json = Q("\\uD800\\u1x");
-        var expectedErrorMessage = "invalid unicode escape sequence: \\u1x\"";
+        var expectedErrorMessage = "invalid unicode escape sequence: '\\u1x\"'";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -137,7 +137,7 @@ public class StringFailingParseTests
     public void ShouldFailOnBackslash00()
     {
         var json = Q("\\\x00");
-        var expectedErrorMessage = "unsupported escaped symbol \0";
+        var expectedErrorMessage = "unsupported escaped symbol: ''";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -145,7 +145,7 @@ public class StringFailingParseTests
     public void ShouldFailOnEscapeX()
     {
         var json = Q("\\x00");
-        var expectedErrorMessage = "unsupported escaped symbol x";
+        var expectedErrorMessage = "unsupported escaped symbol: 'x'";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -161,7 +161,7 @@ public class StringFailingParseTests
     public void ShouldFailOnEscapedCtrlCharTab()
     {
         var json = Q("\\	");
-        var expectedErrorMessage = "unsupported escaped symbol \t";
+        var expectedErrorMessage = "unsupported escaped symbol: '\t'";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -185,7 +185,7 @@ public class StringFailingParseTests
     public void ShouldFailOnIncompleteSurrogateEscapeInvalid()
     {
         var json = Q("\\uD800\\uD800\\x");
-        var expectedErrorMessage = "unsupported escaped symbol x";
+        var expectedErrorMessage = "unsupported escaped symbol: 'x'";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -193,7 +193,7 @@ public class StringFailingParseTests
     public void ShouldFailOnIncompleteSurrogate()
     {
         var json = Q("\\uD834\\Dd");
-        var expectedErrorMessage = "unsupported escaped symbol D";
+        var expectedErrorMessage = "unsupported escaped symbol: 'D'";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -201,7 +201,7 @@ public class StringFailingParseTests
     public void ShouldFailOnInvalidBackslashEsc()
     {
         var json = Q("\\a");
-        var expectedErrorMessage = "unsupported escaped symbol a";
+        var expectedErrorMessage = "unsupported escaped symbol: 'a'";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -217,7 +217,7 @@ public class StringFailingParseTests
     public void ShouldFailOnInvalidUtf8AfterEscape()
     {
         var json = Q("\\\xFFFD");
-        var expectedErrorMessage = "unsupported escaped symbol �";
+        var expectedErrorMessage = "unsupported escaped symbol: '�'";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
@@ -225,7 +225,7 @@ public class StringFailingParseTests
     public void ShouldFailOnInvalidUtf8InEscape()
     {
         var json = Q("\\u\xFFFD");
-        var expectedErrorMessage = "invalid unicode escape sequence: \\u�\"";
+        var expectedErrorMessage = "invalid unicode escape sequence: '\\u�\"'";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 

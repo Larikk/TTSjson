@@ -216,7 +216,7 @@ parseString = function(ctx)
             if b == ASCII_LOWER_U then
                 -- converts four hex digits after a "\u" to a unicode symbol and places cursor to char after last digit
                 local hex = substring(ctx.buffer, ctx.pos + 1, ctx.pos + 4)
-                if #hex ~= 4 then error("invalid unicode escape sequence: \\u" .. hex) end
+                if #hex ~= 4 then errorf("invalid unicode escape sequence: '\\u%s'", hex) end
                 local n = tonumber(hex, 16)
                 if n == nil then error("not a hex number: " .. hex) end
                 sb[sbPos] = tochar(n)
@@ -226,7 +226,7 @@ parseString = function(ctx)
                 if substitute ~= nil then
                     sb[sbPos] = substitute
                 else
-                    error("unsupported escaped symbol " .. ctx.currentChar())
+                    errorf("unsupported escaped symbol: '%s'", ctx.currentChar())
                 end
             end
             sbPos = sbPos + 1
@@ -239,7 +239,7 @@ parseString = function(ctx)
             ctx.nextCodepoint()
             return concat(sb)
         elseif illegalControlCharactersInsideStrings[b] then
-            error("unescaped control character encountered: 0x" .. string.format("%02X", b))
+            errorf("unescaped control character encountered: 0x%02X", b)
         else
         end
         ctx.nextCodepoint()

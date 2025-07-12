@@ -96,7 +96,7 @@ public class NumberFailingParseTests
     public void ShouldFailOnSpaceAfterMinus()
     {
         var json = "- 1";
-        var expectedErrorMessage = "not a number: -";
+        var expectedErrorMessage = "not a number: '-'";
         ttsjson.AssertFailingParse(json, expectedErrorMessage);
     }
 
