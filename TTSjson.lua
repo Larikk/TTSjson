@@ -144,7 +144,6 @@ local parseTrue
 local parseFalse
 local parseNull
 local parseNumber
-local parseUnicodeSeq
 local parseString
 local parseValue
 local parseObject
