@@ -180,10 +180,6 @@ parseNull = function(ctx)
 end
 
 parseNumber = function(ctx)
-    if ctx.currentCodepoint ~= ASCII_MINUS and not validDigits[ctx.currentCodepoint] then
-        error("expected start of number, got " .. ctx.currentChar())
-    end
-
     local startPos = ctx.pos
     while true do
         if not validNumberCharacters[ctx.currentCodepoint] then
@@ -199,7 +195,6 @@ parseNumber = function(ctx)
 end
 
 parseString = function(ctx)
-    if ctx.currentCodepoint ~= ASCII_DOUBLE_QUOTE then error("expected start of string, got " .. ctx.currentChar()) end
     ctx.nextCodepoint()
     local sb = {}
     local sbPos = 1
@@ -250,7 +245,6 @@ parseString = function(ctx)
 end
 
 parseObject = function(ctx)
-    if ctx.currentCodepoint ~= ASCII_OPENING_CURLY_BRACE then error("expected start of object, got " .. ctx.currentChar()) end
     ctx.nextCodepoint()
     ctx.skipWhiteSpace()
 
@@ -286,10 +280,6 @@ parseObject = function(ctx)
 end
 
 parseArray = function(ctx)
-    if ctx.currentCodepoint ~= ASCII_OPENING_SQARE_BRACKET then
-        error("expected start of array, got " ..
-            ctx.currentChar())
-    end
     ctx.nextCodepoint()
     ctx.skipWhiteSpace()
 
