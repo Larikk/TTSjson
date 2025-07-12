@@ -259,10 +259,10 @@ parseObject = function(ctx)
     local obj = {}
 
     while true do
-        if ctx.currentCodepoint ~= ASCII_DOUBLE_QUOTE then error("expected start of object key, got " .. ctx.currentChar()) end
+        if ctx.currentCodepoint ~= ASCII_DOUBLE_QUOTE then errorf("expected start of object key, got '%s'", ctx.currentChar()) end
         local key = parseString(ctx)
         ctx.skipWhiteSpace()
-        if ctx.currentCodepoint ~= ASCII_COLON then error("expected :, got " .. ctx.currentChar()) end
+        if ctx.currentCodepoint ~= ASCII_COLON then errorf("expected ':', got '%s'", ctx.currentChar()) end
         ctx.nextCodepoint()
         ctx.skipWhiteSpace()
         local value = parseValue(ctx)
@@ -275,7 +275,7 @@ parseObject = function(ctx)
             ctx.skipWhiteSpace()
             return obj
         else
-            error("expected ',' or '}' after object value but got " .. ctx.currentChar())
+            errorf("expected ',' or '}' after object value, got '%s'", ctx.currentChar())
         end
     end
 
