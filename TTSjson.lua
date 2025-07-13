@@ -1,5 +1,7 @@
 local module = {}
 
+-- #region parsing
+
 local ASCII_HORIZONTAL_TAB = 0x09  -- \t
 local ASCII_LINE_FEED = 0x0A       --\n
 local ASCII_CARRIAGE_RETURN = 0x0D -- \r
@@ -21,43 +23,21 @@ local ASCII_7 = 0x37
 local ASCII_8 = 0x38
 local ASCII_9 = 0x39
 local ASCII_COLON = 0x3A
-local ASCII_UPPER_A = 0x41
-local ASCII_UPPER_B = 0x42
-local ASCII_UPPER_C = 0x43
-local ASCII_UPPER_D = 0x44
 local ASCII_UPPER_E = 0x45
-local ASCII_UPPER_F = 0x46
 local ASCII_OPENING_SQARE_BRACKET = 0x5B  -- [
 local ASCII_BACKSLASH = 0x5C
 local ASCII_CLOSING_SQUARE_BRACKET = 0x5D --]
-local ASCII_LOWER_A = 0x61
 local ASCII_LOWER_B = 0x62
-local ASCII_LOWER_C = 0x63
-local ASCII_LOWER_D = 0x64
 local ASCII_LOWER_E = 0x65
 local ASCII_LOWER_F = 0x66
-local ASCII_LOWER_L = 0x6C
 local ASCII_LOWER_N = 0x6E
 local ASCII_LOWER_R = 0x72
-local ASCII_LOWER_S = 0x73
 local ASCII_LOWER_T = 0x74
 local ASCII_LOWER_U = 0x75
 local ASCII_OPENING_CURLY_BRACE = 0x7B -- {
 local ASCII_CLOSING_CURLY_BRACE = 0x7D -- }
 
-local validDigits = {
-    [ASCII_0] = true,
-    [ASCII_1] = true,
-    [ASCII_2] = true,
-    [ASCII_3] = true,
-    [ASCII_4] = true,
-    [ASCII_5] = true,
-    [ASCII_6] = true,
-    [ASCII_7] = true,
-    [ASCII_8] = true,
-    [ASCII_9] = true,
-}
-
+-- all characters which are allowed in a json number
 local validNumberCharacters = {
     [ASCII_0] = true,
     [ASCII_1] = true,
@@ -76,6 +56,7 @@ local validNumberCharacters = {
     [ASCII_UPPER_E] = true,
 }
 
+-- maps ascii values of legal escaped characters inside json strings to their string representation
 local escapedCharactersSubstitutions = {
     [ASCII_DOUBLE_QUOTE] = "\"",
     [ASCII_BACKSLASH] = "\\",
@@ -181,6 +162,13 @@ parseNull = function(ctx)
     return nil
 end
 
+--[[
+This function accepts numbers which are not valid JSON (like -01 or 0.e1).
+This is a result of tonumber() being more lax than the JSON specification and it being able to parse these numbers.
+
+This discrepancy to the JSON specification is accepted since using the builtin tonumber()
+is more performant and simple than any custom made parsing of numbers in Lua.
+]]
 parseNumber = function(ctx)
     local startPos = ctx.pos
     while true do
@@ -196,8 +184,29 @@ parseNumber = function(ctx)
     return n
 end
 
+--[[
+To convert JSON strings into Lua strings the following rules must be taken into account:
+* The unescaped characters 0x00 to 0x1F and 0x7F are illegal in the json.
+  If they are encountered, the parsing must be aborted with an error.
+  These characters should not occur in valid json and leaving the check out would improve
+  the parsing speed considerably (since the check must be performed for every single character
+  in a object key or string value). Doing so however could lead to undesired behavior when
+  the parsed strings are processed or displayed by the caller.
+* Escaped constrol characters like \t or \n must be processed into their unescaped forms.
+* Escaped unicode sequences (like \uABCD) must be parsed into the corresponding character.
+* Every other characters can be passed as is into the Lua string.
+
+This algorithm uses a table as a string builder.
+It scans the string for segments without any escaped characters.
+Once it encounters an escaped character, it end the currently processed segment and inserts it into the string builder.
+Afterwards the escaped character is processed and the result is put into the string builder.
+Once that is completed, the algorithm continues scanning for the next segment or escaped character.
+
+Cutting segments out of the source string was proven to be faster then working on each character in isolation.
+]]
 parseString = function(ctx)
-    ctx.nextCodepoint()
+    ctx.nextCodepoint() -- skip opening double quote
+
     local sb = {}
     local sbPos = 1
     local lastSegmentStart = ctx.pos
@@ -206,6 +215,7 @@ parseString = function(ctx)
         local b = ctx.currentCodepoint
         if b == ASCII_BACKSLASH then
             -- Append the segment of non-escaped characters so far
+            -- For consecutive escaped character lastSegmentStart and ctx.pos have the same value here
             if lastSegmentStart < ctx.pos then
                 sb[sbPos] = substring(ctx.buffer, lastSegmentStart, ctx.pos - 1)
                 sbPos = sbPos + 1
@@ -220,34 +230,34 @@ parseString = function(ctx)
                 local n = tonumber(hex, 16)
                 if n == nil then error("not a hex number: " .. hex) end
                 sb[sbPos] = tochar(n)
+                sbPos = sbPos + 1
                 ctx.setPosition(ctx.pos + 4)
             else
                 local substitute = escapedCharactersSubstitutions[b]
                 if substitute ~= nil then
                     sb[sbPos] = substitute
+                    sbPos = sbPos + 1
                 else
                     errorf("unsupported escaped symbol: '%s'", ctx.currentChar())
                 end
             end
-            sbPos = sbPos + 1
             lastSegmentStart = ctx.pos + 1 -- Start next segment after the escaped char
         elseif b == ASCII_DOUBLE_QUOTE then
             -- End of string, append the final segment
             if lastSegmentStart < ctx.pos then
                 sb[sbPos] = substring(ctx.buffer, lastSegmentStart, ctx.pos - 1)
             end
-            ctx.nextCodepoint()
+            ctx.nextCodepoint() -- move to character after the closing double quote
             return concat(sb)
         elseif illegalControlCharactersInsideStrings[b] then
             errorf("unescaped control character encountered: 0x%02X", b)
-        else
         end
         ctx.nextCodepoint()
     end
 end
 
 parseObject = function(ctx)
-    ctx.nextCodepoint()
+    ctx.nextCodepoint() -- skip opening brace
     ctx.skipWhiteSpace()
 
     if ctx.currentCodepoint == ASCII_CLOSING_CURLY_BRACE then
@@ -283,7 +293,7 @@ parseObject = function(ctx)
 end
 
 parseArray = function(ctx)
-    ctx.nextCodepoint()
+    ctx.nextCodepoint() -- skip opening square brace
     ctx.skipWhiteSpace()
 
     if ctx.currentCodepoint == ASCII_CLOSING_SQUARE_BRACKET then
@@ -314,6 +324,7 @@ parseArray = function(ctx)
     return tbl
 end
 
+-- maps the first character of a value token to the corresponding handler
 local valuePrefixToValueHandlers = {
     [ASCII_DOUBLE_QUOTE] = parseString,
     [ASCII_MINUS] = parseNumber,
@@ -343,6 +354,8 @@ parseValue = function(ctx)
     end
     errorf("expected start of a value, got '%s'", ctx.currentChar())
 end
+
+-- #endregion
 
 function module.parse(str)
     local ctx = {}
