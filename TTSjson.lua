@@ -273,7 +273,9 @@ parseObject = function(ctx)
     local obj = {}
 
     while true do
-        if ctx.currentCodepoint ~= ASCII_DOUBLE_QUOTE then errorf("expected start of object key, got '%s'", ctx.currentChar()) end
+        if ctx.currentCodepoint ~= ASCII_DOUBLE_QUOTE then
+            errorf("expected start of object key, got '%s'", ctx.currentChar())
+        end
         local key = parseString(ctx)
         ctx.skipWhiteSpace()
         if ctx.currentCodepoint ~= ASCII_COLON then errorf("expected ':', got '%s'", ctx.currentChar()) end
