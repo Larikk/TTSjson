@@ -135,6 +135,7 @@ local parseString
 local parseValue
 local parseObject
 local parseArray
+local parseJson
 
 parseTrue = function(ctx)
     local endpos = ctx.pos + 3
@@ -361,9 +362,7 @@ parseValue = function(ctx)
     errorf("expected start of a value, got '%s'", ctx.currentChar())
 end
 
--- #endregion
-
-function module.parse(str)
+parseJson = function(str)
     local ctx = {}
     ctx.pos = 1
     ctx.buffer = str
@@ -398,5 +397,9 @@ function module.parse(str)
 
     return value
 end
+
+-- #endregion
+
+module.parse = parseJson
 
 return module
