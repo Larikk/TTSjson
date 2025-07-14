@@ -1,5 +1,20 @@
 local module = {}
 
+-- #region common
+
+-- localize global lookups for performance gains
+local tochar = string.char
+local substring = string.sub
+local concat = table.concat
+local tonumber = tonumber
+local format = string.format
+---@diagnostic disable-next-line: undefined-field
+local unicode = string.unicode
+
+local errorf = function(s, ...) error(format(s, ...)) end
+
+--#endregion
+
 -- #region parsing
 
 local ASCII_HORIZONTAL_TAB = 0x09  -- \t
@@ -112,15 +127,6 @@ local whiteSpaceCharacters = {
     [ASCII_CARRIAGE_RETURN] = true,
 }
 
--- localize global lookups for performance gains
-local tochar = string.char
-local substring = string.sub
-local concat = table.concat
-local tonumber = tonumber
-local format = string.format
----@diagnostic disable-next-line: undefined-field
-local unicode = string.unicode
-
 local parseTrue
 local parseFalse
 local parseNull
@@ -129,8 +135,6 @@ local parseString
 local parseValue
 local parseObject
 local parseArray
-
-local errorf = function(s, ...) error(format(s, ...)) end
 
 parseTrue = function(ctx)
     local endpos = ctx.pos + 3
