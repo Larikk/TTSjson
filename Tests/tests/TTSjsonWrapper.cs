@@ -5,7 +5,9 @@ namespace Tests.Tests;
 public sealed class TTSjsonWrapper
 {
 
+    private readonly Script script;
     private readonly Closure parseFunction;
+    private readonly Closure writeFunction;
 
     public TTSjsonWrapper()
     {
@@ -15,15 +17,40 @@ public sealed class TTSjsonWrapper
         var ttsJsonFilePath = projectDirectory + "/TTSjson.lua";
 
         string scriptCode = File.ReadAllText(ttsJsonFilePath);
-        Table ttsJsonModule = Script.RunString(scriptCode).Table;
+
+        script = new();
+        Table ttsJsonModule = script.DoString(scriptCode).Table;
         parseFunction = ttsJsonModule.Get("parse").Function;
+        writeFunction = ttsJsonModule.Get("write").Function;
     }
 
     public DynValue Parse(string json)
     {
-        // Wrap parsing in task and abort if parsing takes too long as a protection against endless loop in the TTSjson lib
+        return Execute(() => parseFunction.Call(json));
+    }
+
+    public void AssertFailingParse(string json, string expectedErrorMessage)
+    {
+        var exception = Assert.ThrowsAny<Exception>(() => Parse(json));
+        Assert.Equal(expectedErrorMessage, exception.Message);
+    }
+
+    public string Write(DynValue value)
+    {
+        return Execute(() => writeFunction.Call(value).String);
+    }
+
+    public string EvalWrite(string luaCodeForValue)
+    {
+        var value = script.DoString("return " + luaCodeForValue);
+        return Write(value);
+    }
+
+    private static T Execute<T>(Func<T> func)
+    {
+        // Wrap execution in task and abort if task takes too long as a protection against infinite loops in the TTSjson lib
         var ct = new CancellationTokenSource(TimeSpan.FromMilliseconds(200)).Token;
-        Task<DynValue> task = Task.Run(() => parseFunction.Call(json));
+        Task<T> task = Task.Run(func);
         try
         {
             task.Wait(ct);
@@ -33,12 +60,6 @@ public sealed class TTSjsonWrapper
             throw e.InnerException ?? e;
         }
         return task.Result;
-    }
-
-    public void AssertFailingParse(string json, string expectedErrorMessage)
-    {
-        var exception = Assert.ThrowsAny<Exception>(() => Parse(json));
-        Assert.Equal(expectedErrorMessage, exception.Message);
     }
 
 }
