@@ -3,11 +3,14 @@ local module = {}
 -- #region common
 
 -- localize global lookups for performance gains
+local type = type
+local pairs = pairs
 local tochar = string.char
 local substring = string.sub
 local concat = table.concat
 local tonumber = tonumber
 local format = string.format
+local mathmax = math.max
 ---@diagnostic disable-next-line: undefined-field
 local unicode = string.unicode
 
@@ -400,6 +403,119 @@ end
 
 -- #endregion
 
+-- #region writing
+
+local analyzeTableKeys
+local writeDirectly
+local writeNil
+local writeBoolean
+local writeNumber
+local writeString
+local writeTable
+local writeValue
+local writeJson
+
+writeDirectly = function(ctx, value)
+    ctx.append(value)
+end
+
+writeNil = function(ctx, value)
+    ctx.append("null")
+end
+
+writeString = function(ctx, str)
+    -- todo escaping
+    ctx.append("\"").append(str).append("\"")
+end
+
+analyzeTableKeys = function(tbl)
+    local allKeysNumerical = true
+    local maxNumericalKey = -1
+
+    local keys = {}
+    local keysPos = 1
+
+    for key, _ in pairs(tbl) do
+        if (type(key) == "number" and key >= 1) then
+            maxNumericalKey = mathmax(maxNumericalKey, key)
+        else
+            allKeysNumerical = false
+        end
+        keys[keysPos] = key
+        keysPos = keysPos + 1
+    end
+
+    return {
+        allKeysNumerical = allKeysNumerical,
+        maxNumericalKey = maxNumericalKey,
+        keys = keys,
+    }
+end
+
+writeTable = function(ctx, tbl)
+    local analysis = analyzeTableKeys(tbl)
+    if analysis.allKeysNumerical then
+        ctx.append("[")
+        if analysis.maxNumericalKey ~= -1 then
+            writeValue(ctx, tbl[1])
+            for i = 2, analysis.maxNumericalKey do
+                ctx.append(",")
+                writeValue(ctx, tbl[i])
+            end
+        end
+        ctx.append("]")
+    else
+        ctx.append("{")
+        local keys = analysis.keys
+        if #keys > 0 then
+            writeString(ctx, keys[1])
+            ctx.append(":")
+            writeValue(ctx, tbl[keys[1]])
+            for i = 2, #keys do
+                ctx.append(",")
+                writeString(ctx, keys[i])
+                ctx.append(":")
+                writeValue(ctx, tbl[keys[i]])
+            end
+        end
+        ctx.append("}")
+    end
+end
+
+local writeHandlers = {
+    ["nil"] = writeNil,
+    ["boolean"] = writeDirectly,
+    ["number"] = writeDirectly,
+    ["string"] = writeString,
+    ["table"] = writeTable,
+}
+
+writeValue = function(ctx, value)
+    local handler = writeHandlers[type(value)]
+    if (handler ~= nil) then
+        handler(ctx, value)
+    end
+end
+
+writeJson = function(value)
+    local ctx = {}
+    ctx.sb = {} --stringBuilder
+    ctx.sbPos = 1
+    ctx.append = function(element)
+        ctx.sb[ctx.sbPos] = element
+        ctx.sbPos = ctx.sbPos + 1
+        return ctx
+    end
+
+    writeValue(ctx, value)
+
+    local json = concat(ctx.sb)
+    return json
+end
+
+--#region
+
 module.parse = parseJson
+module.write = writeJson
 
 return module
