@@ -16,10 +16,15 @@
             "console": "internalConsole"
         },
         {
-            "name": "Debug MoonSharpPlayground",
-            "type": "dotnet",
+            "name": "Run MoonSharpPlayground",
+            "type": "coreclr",
             "request": "launch",
-            "projectPath": "${workspaceFolder}/MoonSharpPlayground/MoonSharpPlayground.csproj"
+            "preLaunchTask": "build MoonSharpPlayground",
+            "program": "${workspaceFolder}/MoonSharpPlayground/bin/Debug/net8.0/MoonSharpPlayground.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "console": "internalConsole"
         },
         {
             "name": "Start debug server",

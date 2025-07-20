@@ -31,6 +31,14 @@
             "problemMatcher": "$msCompile"
         },
 		{
+			"type": "dotnet",
+			"task": "build ${workspaceFolder}/MoonSharpPlayground/MoonSharpPlayground.csproj",
+			"file": "${workspaceFolder}/MoonSharpPlayground/MoonSharpPlayground.csproj",
+			"group": "build",
+			"problemMatcher": [],
+			"label": "build MoonSharpPlayground"
+		},
+		{
 			"label": "test",
 			"command": "dotnet",
 			"type": "shell",
