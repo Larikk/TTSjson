@@ -8,6 +8,7 @@ local pairs = pairs
 local tochar = string.char
 local substring = string.sub
 local concat = table.concat
+local insert = table.insert
 local tonumber = tonumber
 local format = string.format
 local mathmax = math.max
@@ -405,6 +406,9 @@ end
 
 -- #region writing
 
+local TABLE_TYPE_ARRAY = 1
+local TABLE_TYPE_OBJECT = 2
+
 local analyzeTableKeys
 local writeNil
 local writeBoolean
@@ -432,37 +436,40 @@ writeString = function(ctx, str)
 end
 
 analyzeTableKeys = function(tbl)
-    local allKeysNumerical = true
-    local maxNumericalKey = -1
+    local firstKey = next(tbl)
 
-    local keys = {}
-    local keysPos = 1
-
-    for key, _ in pairs(tbl) do
-        local _type = type(key)
-        if (_type == "number" and key >= 1) then
+    if (type(firstKey) == "number") then
+        local maxNumericalKey = 0
+        for key, _ in pairs(tbl) do
+            if (type(key) ~= "number") then
+                errorf("encountered non-numerical key in array-like table: '%s' with type '%s'", key, type(key))
+            end
             maxNumericalKey = mathmax(maxNumericalKey, key)
-        elseif (_type == "string") then
-            allKeysNumerical = false
-        else
-            errorf("encountered numerical, negative or non-string object key: '%s' with type '%s'", key, _type)
         end
-        keys[keysPos] = key
-        keysPos = keysPos + 1
+        return {
+            tableType = TABLE_TYPE_ARRAY,
+            maxNumericalKey = maxNumericalKey,
+        }
+    else
+        local keys = {}
+        for key, _ in pairs(tbl) do
+            if (type(key) ~= "string") then
+                errorf("encountered non-string key in object-like table: '%s' with type '%s'", key, type(key))
+            end
+            insert(keys, key)
+        end
+        return {
+            tableType = TABLE_TYPE_OBJECT,
+            keys = keys,
+        }
     end
-
-    return {
-        allKeysNumerical = allKeysNumerical,
-        maxNumericalKey = maxNumericalKey,
-        keys = keys,
-    }
 end
 
 writeTable = function(ctx, tbl)
     local analysis = analyzeTableKeys(tbl)
-    if analysis.allKeysNumerical then
+    if analysis.tableType == TABLE_TYPE_ARRAY then
         ctx.append("[")
-        if analysis.maxNumericalKey ~= -1 then
+        if analysis.maxNumericalKey >= 1 then
             writeValue(ctx, tbl[1])
             for i = 2, analysis.maxNumericalKey do
                 ctx.append(",")
