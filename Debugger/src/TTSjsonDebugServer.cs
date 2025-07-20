@@ -9,11 +9,11 @@ class TTSjsonDebugServer
 
     public TTSjsonDebugServer()
     {
-        int port = 41912;
+        var port = 41912;
         var server = new MoonSharpVsCodeDebugServer(port);
 
         var scriptPath = Environment.GetEnvironmentVariable("TTSJSON_PATH") ?? throw new Exception("TTSJSON_PATH is not set");
-        string scriptCode = File.ReadAllText(scriptPath);
+        var scriptCode = File.ReadAllText(scriptPath);
         script = new Script();
 
         DynValue executionResult = script.DoString(scriptCode, null, scriptPath);
@@ -34,5 +34,11 @@ class TTSjsonDebugServer
     {
         string json = writeFunction.Call(value).String;
         Console.WriteLine(json);
+    }
+
+    public void DebugEvalWriting(string luaCodeForValue)
+    {
+        var value = script.DoString("return " + luaCodeForValue.Trim());
+        DebugWriting(value);
     }
 }
