@@ -416,7 +416,7 @@ local writeValue
 local writeJson
 
 writeDirectly = function(ctx, value)
-    ctx.append(value)
+    ctx.append(tostring(value))
 end
 
 writeNil = function(ctx, value)
