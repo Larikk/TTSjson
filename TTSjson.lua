@@ -427,7 +427,9 @@ writeBoolean = function(ctx, value)
 end
 
 writeNumber = function(ctx, value)
-    ctx.append(value)
+    local s = tostring(value)
+    if (s == "NaN") then errorf("encountered NaN during serialization") end
+    ctx.append(s)
 end
 
 writeString = function(ctx, str)

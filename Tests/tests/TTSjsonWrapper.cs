@@ -52,6 +52,12 @@ public sealed class TTSjsonWrapper
         Assert.Equal(expectedErrorMessage, exception.Message);
     }
 
+    public void AssertFailingEvalWrite(string luaCodeForValue, string expectedErrorMessage)
+    {
+        var exception = Assert.ThrowsAny<Exception>(() => EvalWrite(luaCodeForValue));
+        Assert.Equal(expectedErrorMessage, exception.Message);
+    }
+
     private static T Execute<T>(Func<T> func)
     {
         // Wrap execution in task and abort if task takes too long as a protection against infinite loops in the TTSjson lib

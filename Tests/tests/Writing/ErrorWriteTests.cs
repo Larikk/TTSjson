@@ -27,4 +27,10 @@ public class ErorWriteTests
 
         ttsjson.AssertFailingWrite(value, "detected a cycle between tables, aborting serialization");
     }
+
+    [Fact]
+    public void ShouldFailOnNan()
+    {
+        ttsjson.AssertFailingEvalWrite("0/0", "encountered NaN during serialization");
+    }
 }

@@ -11,3 +11,5 @@
 * Array-like tables:
     * The resulting json array has all the values between the indeces 1 and the highest index of the source table. Gaps are filled with `null`-values. Example: `{ [1] = true, [3] = true }` serializes into `[true, null, true]`.
     * Floating point and negative numbers in array-like tables have undefined behavior. Use at your own risk.
+* Numbers:
+    * Attempting to serialize `NaN` throws an error.
