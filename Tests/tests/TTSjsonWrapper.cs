@@ -46,6 +46,12 @@ public sealed class TTSjsonWrapper
         return Write(value);
     }
 
+    public void AssertFailingWrite(DynValue value, string expectedErrorMessage)
+    {
+        var exception = Assert.ThrowsAny<Exception>(() => Write(value));
+        Assert.Equal(expectedErrorMessage, exception.Message);
+    }
+
     private static T Execute<T>(Func<T> func)
     {
         // Wrap execution in task and abort if task takes too long as a protection against infinite loops in the TTSjson lib

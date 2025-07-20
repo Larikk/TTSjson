@@ -466,6 +466,11 @@ analyzeTableKeys = function(tbl)
 end
 
 writeTable = function(ctx, tbl)
+    if (ctx.encounteredTables[tbl]) then
+        errorf("detected a cycle between tables, aborting serialization")
+    end
+    ctx.encounteredTables[tbl] = true
+
     local analysis = analyzeTableKeys(tbl)
     if analysis.tableType == TABLE_TYPE_ARRAY then
         ctx.append("[")
@@ -517,6 +522,7 @@ writeJson = function(value)
     local ctx = {}
     ctx.sb = {} --stringBuilder
     ctx.sbPos = 1
+    ctx.encounteredTables = {}
     ctx.append = function(element)
         ctx.sb[ctx.sbPos] = element
         ctx.sbPos = ctx.sbPos + 1
