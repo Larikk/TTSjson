@@ -4,9 +4,13 @@
 static void test()
 {
     string scriptCode = """
-    return "Hello World"
+    print("Hello")
+    return "World"
     """;
-    var res = Script.RunString(scriptCode).String;
+
+    var script = new Script();
+    script.Options.DebugPrint = Console.WriteLine;
+    var res = script.DoString(scriptCode);
     Console.WriteLine(res);
 }
 
