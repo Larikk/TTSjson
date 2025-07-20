@@ -406,7 +406,6 @@ end
 -- #region writing
 
 local analyzeTableKeys
-local writeDirectly
 local writeNil
 local writeBoolean
 local writeNumber
@@ -415,12 +414,16 @@ local writeTable
 local writeValue
 local writeJson
 
-writeDirectly = function(ctx, value)
+writeNil = function(ctx, value)
+    ctx.append("null")
+end
+
+writeBoolean = function(ctx, value)
     ctx.append(tostring(value))
 end
 
-writeNil = function(ctx, value)
-    ctx.append("null")
+writeNumber = function(ctx, value)
+    ctx.append(value)
 end
 
 writeString = function(ctx, str)
@@ -436,10 +439,13 @@ analyzeTableKeys = function(tbl)
     local keysPos = 1
 
     for key, _ in pairs(tbl) do
-        if (type(key) == "number" and key >= 1) then
+        local _type = type(key)
+        if (_type == "number" and key >= 1) then
             maxNumericalKey = mathmax(maxNumericalKey, key)
-        else
+        elseif (_type == "string") then
             allKeysNumerical = false
+        else
+            errorf("encountered numerical, negative or non-string object key: '%s' with type '%s'", key, _type)
         end
         keys[keysPos] = key
         keysPos = keysPos + 1
@@ -484,16 +490,19 @@ end
 
 local writeHandlers = {
     ["nil"] = writeNil,
-    ["boolean"] = writeDirectly,
-    ["number"] = writeDirectly,
+    ["boolean"] = writeBoolean,
+    ["number"] = writeNumber,
     ["string"] = writeString,
     ["table"] = writeTable,
 }
 
 writeValue = function(ctx, value)
-    local handler = writeHandlers[type(value)]
+    local _type = type(value)
+    local handler = writeHandlers[_type]
     if (handler ~= nil) then
         handler(ctx, value)
+    else
+        errorf("unsupported value type '%s'", _type)
     end
 end
 
