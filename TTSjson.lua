@@ -435,14 +435,42 @@ writeNumber = function(ctx, value)
 end
 
 local characterToEscapedSubstitution = {
+    [0x00] = "\\u0000",
+    [0x01] = "\\u0001",
+    [0x02] = "\\u0002",
+    [0x03] = "\\u0003",
+    [0x04] = "\\u0004",
+    [0x05] = "\\u0005",
+    [0x06] = "\\u0006",
+    [0x07] = "\\u0007",
+    [0x08] = "\\b",
+    [0x09] = "\\t",
+    [0x0A] = "\\n",
+    [0x0B] = "\\u000B",
+    [0x0C] = "\\f",
+    [0x0D] = "\\r",
+    [0x0E] = "\\u000E",
+    [0x0F] = "\\u000F",
+    [0x10] = "\\u0010",
+    [0x11] = "\\u0011",
+    [0x12] = "\\u0012",
+    [0x13] = "\\u0013",
+    [0x14] = "\\u0014",
+    [0x15] = "\\u0015",
+    [0x16] = "\\u0016",
+    [0x17] = "\\u0017",
+    [0x18] = "\\u0018",
+    [0x19] = "\\u0019",
+    [0x1A] = "\\u001A",
+    [0x1B] = "\\u001B",
+    [0x1C] = "\\u001C",
+    [0x1D] = "\\u001D",
+    [0x1E] = "\\u001E",
+    [0x1F] = "\\u001F",
+    [0x7F] = "\\u007F",
     [ASCII_DOUBLE_QUOTE] = "\\\"",
     [ASCII_BACKSLASH] = "\\\\",
     [ASCII_FORWARDSLASH] = "\\/",
-    [ASCII_LINE_FEED] = "\\n",
-    [ASCII_CARRIAGE_RETURN] = "\\r",
-    [ASCII_HORIZONTAL_TAB] = "\\t",
-    [ASCII_BACKSPACE] = "\\b",
-    [ASCII_FORM_FEED] = "\\f",
 }
 
 writeString = function(ctx, str)
@@ -453,7 +481,7 @@ writeString = function(ctx, str)
         local substitution = characterToEscapedSubstitution[codepoint]
         if substitution ~= nil then
             ctx.append(substitution)
-        elseif codepoint >= 0x7F or codepoint <= 0x1F then
+        elseif codepoint > 0x7F then
             ctx.append(format("\\u%04X", codepoint))
         else
             ctx.append(tochar(codepoint))
