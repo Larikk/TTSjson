@@ -480,7 +480,7 @@ writeString = function(ctx, str)
     -- Strings which do not require any escaping can be passed directly into the json
     local firstCharacterIndexRequiringEscaping = -1
     for i = 1, #str do
-        local codepoint = unicode(str, 1)
+        local codepoint = unicode(str, i)
         if codepoint > 0x7F or characterToEscapedSubstitution[codepoint] then
             firstCharacterIndexRequiringEscaping = i
             break
