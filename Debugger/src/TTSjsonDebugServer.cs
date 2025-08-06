@@ -3,28 +3,42 @@ using MoonSharp.VsCodeDebugger;
 
 class TTSjsonDebugServer
 {
-    private readonly Closure ParseFunction;
+    private readonly Script script;
+    private readonly Closure parseFunction;
+    private readonly Closure writeFunction;
 
     public TTSjsonDebugServer()
     {
-        int port = 41912;
+        var port = 41912;
         var server = new MoonSharpVsCodeDebugServer(port);
 
-        string scriptPath = Environment.GetEnvironmentVariable("TTSJSON_PATH") ?? throw new Exception("TTSJSON_PATH is not set");
-        string scriptCode = File.ReadAllText(scriptPath);
-        var script = new Script();
+        var scriptPath = Environment.GetEnvironmentVariable("TTSJSON_PATH") ?? throw new Exception("TTSJSON_PATH is not set");
+        var scriptCode = File.ReadAllText(scriptPath);
+        script = new Script();
 
         DynValue executionResult = script.DoString(scriptCode, null, scriptPath);
         server.AttachToScript(script, scriptPath);
-        ParseFunction = executionResult.Table.Get("parse").Function;
-
+        parseFunction = executionResult.Table.Get("parse").Function;
+        writeFunction = executionResult.Table.Get("write").Function;
         server.Start();
         Thread.Sleep(2000); // Give debugger time to attach
     }
 
     public void DebugParsing(string json)
     {
-        DynValue res = ParseFunction.Call(json);
+        DynValue res = parseFunction.Call(json);
         Console.WriteLine(res);
+    }
+
+    public void DebugWriting(DynValue value)
+    {
+        string json = writeFunction.Call(value).String;
+        Console.WriteLine(json);
+    }
+
+    public void DebugEvalWriting(string luaCodeForValue)
+    {
+        var value = script.DoString("return " + luaCodeForValue.Trim());
+        DebugWriting(value);
     }
 }

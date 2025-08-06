@@ -1,9 +1,26 @@
 local module = {}
 
--- #region parsing
+-- #region common
 
+-- localize global lookups for performance gains
+local type = type
+local pairs = pairs
+local tochar = string.char
+local substring = string.sub
+local concat = table.concat
+local insert = table.insert
+local tonumber = tonumber
+local format = string.format
+local mathmax = math.max
+---@diagnostic disable-next-line: undefined-field
+local unicode = string.unicode
+
+local errorf = function(s, ...) error(format(s, ...)) end
+
+local ASCII_BACKSPACE = 0x08       -- \b
 local ASCII_HORIZONTAL_TAB = 0x09  -- \t
-local ASCII_LINE_FEED = 0x0A       --\n
+local ASCII_LINE_FEED = 0x0A       -- \n
+local ASCII_FORM_FEED = 0x0C       -- \f
 local ASCII_CARRIAGE_RETURN = 0x0D -- \r
 local ASCII_SPACE = 0x20
 local ASCII_DOUBLE_QUOTE = 0x22
@@ -36,6 +53,10 @@ local ASCII_LOWER_T = 0x74
 local ASCII_LOWER_U = 0x75
 local ASCII_OPENING_CURLY_BRACE = 0x7B -- {
 local ASCII_CLOSING_CURLY_BRACE = 0x7D -- }
+
+--#endregion
+
+-- #region parsing
 
 -- all characters which are allowed in a json number
 local validNumberCharacters = {
@@ -112,15 +133,6 @@ local whiteSpaceCharacters = {
     [ASCII_CARRIAGE_RETURN] = true,
 }
 
--- localize global lookups for performance gains
-local tochar = string.char
-local substring = string.sub
-local concat = table.concat
-local tonumber = tonumber
-local format = string.format
----@diagnostic disable-next-line: undefined-field
-local unicode = string.unicode
-
 local parseTrue
 local parseFalse
 local parseNull
@@ -129,8 +141,7 @@ local parseString
 local parseValue
 local parseObject
 local parseArray
-
-local errorf = function(s, ...) error(format(s, ...)) end
+local parseJson
 
 parseTrue = function(ctx)
     local endpos = ctx.pos + 3
@@ -269,7 +280,9 @@ parseObject = function(ctx)
     local obj = {}
 
     while true do
-        if ctx.currentCodepoint ~= ASCII_DOUBLE_QUOTE then errorf("expected start of object key, got '%s'", ctx.currentChar()) end
+        if ctx.currentCodepoint ~= ASCII_DOUBLE_QUOTE then
+            errorf("expected start of object key, got '%s'", ctx.currentChar())
+        end
         local key = parseString(ctx)
         ctx.skipWhiteSpace()
         if ctx.currentCodepoint ~= ASCII_COLON then errorf("expected ':', got '%s'", ctx.currentChar()) end
@@ -355,9 +368,7 @@ parseValue = function(ctx)
     errorf("expected start of a value, got '%s'", ctx.currentChar())
 end
 
--- #endregion
-
-function module.parse(str)
+parseJson = function(str)
     local ctx = {}
     ctx.pos = 1
     ctx.buffer = str
@@ -392,5 +403,177 @@ function module.parse(str)
 
     return value
 end
+
+-- #endregion
+
+-- #region writing
+
+local TABLE_TYPE_ARRAY = 1
+local TABLE_TYPE_OBJECT = 2
+
+local analyzeTableKeys
+local writeNil
+local writeBoolean
+local writeNumber
+local writeString
+local writeTable
+local writeValue
+local writeJson
+
+writeNil = function(ctx, value)
+    ctx.append("null")
+end
+
+writeBoolean = function(ctx, value)
+    ctx.append(tostring(value))
+end
+
+writeNumber = function(ctx, value)
+    local s = tostring(value)
+    if (s == "NaN") then errorf("encountered NaN during serialization") end
+    ctx.append(s)
+end
+
+local characterToEscapedSubstitution = {
+    [ASCII_DOUBLE_QUOTE] = "\\\"",
+    [ASCII_BACKSLASH] = "\\\\",
+    [ASCII_FORWARDSLASH] = "\\/",
+    [ASCII_LINE_FEED] = "\\n",
+    [ASCII_CARRIAGE_RETURN] = "\\r",
+    [ASCII_HORIZONTAL_TAB] = "\\t",
+    [ASCII_BACKSPACE] = "\\b",
+    [ASCII_FORM_FEED] = "\\f",
+}
+
+writeString = function(ctx, str)
+    ctx.append("\"")
+
+    for i = 1, #str do
+        local codepoint = unicode(str, i)
+        local substitution = characterToEscapedSubstitution[codepoint]
+        if substitution ~= nil then
+            ctx.append(substitution)
+        elseif codepoint >= 0x7F or codepoint <= 0x1F then
+            ctx.append(format("\\u%04X", codepoint))
+        else
+            ctx.append(tochar(codepoint))
+        end
+    end
+
+    ctx.append("\"")
+end
+
+analyzeTableKeys = function(tbl)
+    local firstKey = next(tbl)
+    local firstKeyType = type(firstKey)
+
+    if (firstKeyType == "number") then
+        local maxNumericalKey = 0
+        for key, _ in pairs(tbl) do
+            if (type(key) ~= "number") then
+                errorf("encountered non-numerical key in array-like table: '%s' with type '%s'", tostring(key), type(key))
+            end
+            maxNumericalKey = mathmax(maxNumericalKey, key)
+        end
+        return {
+            tableType = TABLE_TYPE_ARRAY,
+            maxNumericalKey = maxNumericalKey,
+        }
+    elseif firstKeyType == "string" then
+        local keys = {}
+        for key, _ in pairs(tbl) do
+            if (type(key) ~= "string") then
+                errorf("encountered non-string key in object-like table: '%s' with type '%s'", tostring(key), type(key))
+            end
+            insert(keys, key)
+        end
+        return {
+            tableType = TABLE_TYPE_OBJECT,
+            keys = keys,
+        }
+    elseif (firstKey == nil) then
+        return {
+            tableType = TABLE_TYPE_ARRAY,
+            maxNumericalKey = 0,
+        }
+    else
+        errorf("encountered unsupported key type: '%s' with type '%s'", tostring(firstKey), firstKeyType)
+    end
+end
+
+writeTable = function(ctx, tbl)
+    if (ctx.encounteredTables[tbl]) then
+        errorf("detected a cycle between tables, aborting serialization")
+    end
+    ctx.encounteredTables[tbl] = true
+
+    local analysis = analyzeTableKeys(tbl)
+    if analysis.tableType == TABLE_TYPE_ARRAY then
+        ctx.append("[")
+        if analysis.maxNumericalKey >= 1 then
+            writeValue(ctx, tbl[1])
+            for i = 2, analysis.maxNumericalKey do
+                ctx.append(",")
+                writeValue(ctx, tbl[i])
+            end
+        end
+        ctx.append("]")
+    else
+        ctx.append("{")
+        local keys = analysis.keys
+        if #keys > 0 then
+            writeString(ctx, keys[1])
+            ctx.append(":")
+            writeValue(ctx, tbl[keys[1]])
+            for i = 2, #keys do
+                ctx.append(",")
+                writeString(ctx, keys[i])
+                ctx.append(":")
+                writeValue(ctx, tbl[keys[i]])
+            end
+        end
+        ctx.append("}")
+    end
+end
+
+local writeHandlers = {
+    ["nil"] = writeNil,
+    ["boolean"] = writeBoolean,
+    ["number"] = writeNumber,
+    ["string"] = writeString,
+    ["table"] = writeTable,
+}
+
+writeValue = function(ctx, value)
+    local _type = type(value)
+    local handler = writeHandlers[_type]
+    if (handler ~= nil) then
+        handler(ctx, value)
+    else
+        errorf("unsupported value type '%s'", _type)
+    end
+end
+
+writeJson = function(value)
+    local ctx = {}
+    ctx.sb = {} --stringBuilder
+    ctx.sbPos = 1
+    ctx.encounteredTables = {}
+    ctx.append = function(element)
+        ctx.sb[ctx.sbPos] = element
+        ctx.sbPos = ctx.sbPos + 1
+        return ctx
+    end
+
+    writeValue(ctx, value)
+
+    local json = concat(ctx.sb)
+    return json
+end
+
+--#region
+
+module.parse = parseJson
+module.write = writeJson
 
 return module
