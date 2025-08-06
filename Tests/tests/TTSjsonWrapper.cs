@@ -40,6 +40,11 @@ public sealed class TTSjsonWrapper
         return Execute(() => writeFunction.Call(value).String);
     }
 
+    public string Write(string value)
+    {
+        return Write(DynValue.NewString(value));
+    }
+
     public string EvalWrite(string luaCodeForValue)
     {
         var value = script.DoString("return " + luaCodeForValue);

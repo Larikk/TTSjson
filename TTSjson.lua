@@ -21,8 +21,10 @@ local errorf = function(s, ...) error(format(s, ...)) end
 
 -- #region parsing
 
+local ASCII_BACKSPACE = 0x08       -- \b
 local ASCII_HORIZONTAL_TAB = 0x09  -- \t
-local ASCII_LINE_FEED = 0x0A       --\n
+local ASCII_LINE_FEED = 0x0A       -- \n
+local ASCII_FORM_FEED = 0x0C       -- \f
 local ASCII_CARRIAGE_RETURN = 0x0D -- \r
 local ASCII_SPACE = 0x20
 local ASCII_DOUBLE_QUOTE = 0x22
@@ -432,9 +434,33 @@ writeNumber = function(ctx, value)
     ctx.append(s)
 end
 
+local characterToEscapedSubstitution = {
+    [ASCII_DOUBLE_QUOTE] = "\\\"",
+    [ASCII_BACKSLASH] = "\\\\",
+    [ASCII_FORWARDSLASH] = "\\/",
+    [ASCII_LINE_FEED] = "\\n",
+    [ASCII_CARRIAGE_RETURN] = "\\r",
+    [ASCII_HORIZONTAL_TAB] = "\\t",
+    [ASCII_BACKSPACE] = "\\b",
+    [ASCII_FORM_FEED] = "\\f",
+}
+
 writeString = function(ctx, str)
-    -- todo escaping
-    ctx.append("\"").append(str).append("\"")
+    ctx.append("\"")
+
+    for i = 1, #str do
+        local codepoint = unicode(str, i)
+        local substitution = characterToEscapedSubstitution[codepoint]
+        if substitution ~= nil then
+            ctx.append(substitution)
+        elseif codepoint >= 0x7F or codepoint <= 0x1F then
+            ctx.append(format("\\u%04X", codepoint))
+        else
+            ctx.append(tochar(codepoint))
+        end
+    end
+
+    ctx.append("\"")
 end
 
 analyzeTableKeys = function(tbl)
