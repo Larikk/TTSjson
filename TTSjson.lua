@@ -17,10 +17,6 @@ local unicode = string.unicode
 
 local errorf = function(s, ...) error(format(s, ...)) end
 
---#endregion
-
--- #region parsing
-
 local ASCII_BACKSPACE = 0x08       -- \b
 local ASCII_HORIZONTAL_TAB = 0x09  -- \t
 local ASCII_LINE_FEED = 0x0A       -- \n
@@ -57,6 +53,10 @@ local ASCII_LOWER_T = 0x74
 local ASCII_LOWER_U = 0x75
 local ASCII_OPENING_CURLY_BRACE = 0x7B -- {
 local ASCII_CLOSING_CURLY_BRACE = 0x7D -- }
+
+--#endregion
+
+-- #region parsing
 
 -- all characters which are allowed in a json number
 local validNumberCharacters = {
