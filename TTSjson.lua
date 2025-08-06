@@ -470,7 +470,6 @@ local characterToEscapedSubstitution = {
     [0x7F] = "\\u007F",
     [ASCII_DOUBLE_QUOTE] = "\\\"",
     [ASCII_BACKSLASH] = "\\\\",
-    [ASCII_FORWARDSLASH] = "\\/",
 }
 
 writeString = function(ctx, str)

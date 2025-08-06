@@ -33,13 +33,12 @@ public class StringWriteTests
     [Theory]
     [InlineData("\"", "\\\"")]
     [InlineData("\\", "\\\\")]
-    [InlineData("/", "\\/")]
     [InlineData("\n", "\\n")]
     [InlineData("\r", "\\r")]
     [InlineData("\t", "\\t")]
     [InlineData("\b", "\\b")]
     [InlineData("\f", "\\f")]
-    [InlineData("\"\\/\n\r\t\b\f", "\\\"\\\\\\/\\n\\r\\t\\b\\f")]
+    [InlineData("\"\\\n\r\t\b\f", "\\\"\\\\\\n\\r\\t\\b\\f")]
     public void ShouldEscapeCharacterWhenNecessary(string character, string expectedEscapedForm)
     {
         ttsjson.Write(character).Should().BeEquivalentTo(Q(expectedEscapedForm));
