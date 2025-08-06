@@ -1,7 +1,3 @@
-using FluentAssertions;
-using FluentAssertions.Json;
-using Newtonsoft.Json.Linq;
-
 namespace Tests.Tests.Writing;
 
 public class ObjectTableWriteTests
@@ -9,19 +5,31 @@ public class ObjectTableWriteTests
     private static readonly TTSjsonWrapper ttsjson = new();
 
     [Fact]
-    public void ShouldWriteObjectTable()
+    public void ShouldWriteObjectTableWithOneKey()
     {
-        var actual = ttsjson.EvalWrite(@"{key = ""value""}");
-        var expected = @"{""key"":""value""}";
-        actual.Should().Be(expected);
+        ttsjson.EvalWrite(""" {key = "value"} """)
+            .ShouldBeEquivalentToJson(""" {"key":"value"}""");
+    }
+
+    [Fact]
+    public void ShouldWriteObjectTableWithTwoKeys()
+    {
+        ttsjson.EvalWrite(""" {key1 = "value", key2 = "value"} """)
+            .ShouldBeEquivalentToJson(""" {"key1":"value", "key2":"value"}""");
+    }
+
+    [Fact]
+    public void ShouldWriteObjectTableWithThreeKeys()
+    {
+        ttsjson.EvalWrite(""" {key1 = "value", key2 = "value", key3 = "value"} """)
+            .ShouldBeEquivalentToJson(""" {"key1":"value", "key2":"value", "key3":"value"}""");
     }
 
     [Fact]
     public void ShouldWriteNestedObjectTable()
     {
-        var actual = ttsjson.EvalWrite(@"{key = {key = ""value""}}");
-        var expected = @"{""key"":{""key"":""value""}}";
-        actual.Should().Be(expected);
+        ttsjson.EvalWrite(""" {key = {key = "value"}}""")
+            .ShouldBeEquivalentToJson(""" {"key":{"key":"value"}}""");
     }
 
     [Fact]
@@ -46,7 +54,7 @@ public class ObjectTableWriteTests
                 "_object": {"key": "value"}
             }
         """;
-        JToken.Parse(actual).Should().BeEquivalentTo(JToken.Parse(expected));
+        actual.ShouldBeEquivalentToJson(expected);
     }
 
 }
