@@ -66,7 +66,7 @@ public sealed class TTSjsonWrapper
     private static T Execute<T>(Func<T> func)
     {
         // Wrap execution in task and abort if task takes too long as a protection against infinite loops in the TTSjson lib
-        var ct = new CancellationTokenSource(TimeSpan.FromMilliseconds(200)).Token;
+        var ct = new CancellationTokenSource(TimeSpan.FromMilliseconds(1000)).Token;
         Task<T> task = Task.Run(func);
         try
         {

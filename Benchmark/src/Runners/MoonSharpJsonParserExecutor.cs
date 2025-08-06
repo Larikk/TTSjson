@@ -3,6 +3,7 @@ using MoonSharp.Interpreter;
 class MoonSharpJsonParserExecutor : IParserExecutor
 {
     private readonly Closure ParseFunction;
+    private readonly Closure WriteFunction;
 
     public MoonSharpJsonParserExecutor()
     {
@@ -28,12 +29,17 @@ class MoonSharpJsonParserExecutor : IParserExecutor
             return json.parse(str)
         end
 
+        function module.write(value)
+            return json.serialize(value)
+        end
+
         return module
         """;
         var script = new Script();
 
         DynValue executionResult = script.DoString(scriptCode);
         ParseFunction = executionResult.Table.Get("decode").Function;
+        WriteFunction = executionResult.Table.Get("write").Function;
     }
 
     public string GetName()
@@ -41,9 +47,14 @@ class MoonSharpJsonParserExecutor : IParserExecutor
         return "MoonSharpJson";
     }
 
-    public void Parse(string json)
+    public DynValue Parse(string json)
     {
-        ParseFunction.Call(json);
+        return ParseFunction.Call(json);
+    }
+
+    public string Write(DynValue value)
+    {
+        return WriteFunction.Call(value).String;
     }
 }
 

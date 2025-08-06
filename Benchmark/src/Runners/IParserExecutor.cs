@@ -1,5 +1,8 @@
+using MoonSharp.Interpreter;
+
 interface IParserExecutor
 {
     string GetName();
-    void Parse(string json);
+    DynValue Parse(string json);
+    string Write(DynValue value);
 }
