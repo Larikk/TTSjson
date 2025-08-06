@@ -3,6 +3,7 @@ using MoonSharp.Interpreter;
 class TTSjsonParserExecutor : IParserExecutor
 {
     private readonly Closure ParseFunction;
+    private readonly Closure WriteFunction;
 
     public TTSjsonParserExecutor()
     {
@@ -11,6 +12,7 @@ class TTSjsonParserExecutor : IParserExecutor
 
         DynValue executionResult = script.DoString(scriptCode, null, "TTSjson");
         ParseFunction = executionResult.Table.Get("parse").Function;
+        WriteFunction = executionResult.Table.Get("write").Function;
     }
 
     public string GetName()
@@ -18,8 +20,13 @@ class TTSjsonParserExecutor : IParserExecutor
         return "TTSjson";
     }
 
-    public void Parse(string json)
+    public DynValue Parse(string json)
     {
-        ParseFunction.Call(json);
+        return ParseFunction.Call(json);
+    }
+
+    public string Write(DynValue value)
+    {
+        return WriteFunction.Call(value).String;
     }
 }
