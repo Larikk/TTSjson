@@ -465,12 +465,13 @@ end
 
 analyzeTableKeys = function(tbl)
     local firstKey = next(tbl)
+    local firstKeyType = type(firstKey)
 
-    if (type(firstKey) == "number") then
+    if (firstKeyType == "number") then
         local maxNumericalKey = 0
         for key, _ in pairs(tbl) do
             if (type(key) ~= "number") then
-                errorf("encountered non-numerical key in array-like table: '%s' with type '%s'", key, type(key))
+                errorf("encountered non-numerical key in array-like table: '%s' with type '%s'", tostring(key), type(key))
             end
             maxNumericalKey = mathmax(maxNumericalKey, key)
         end
@@ -478,11 +479,11 @@ analyzeTableKeys = function(tbl)
             tableType = TABLE_TYPE_ARRAY,
             maxNumericalKey = maxNumericalKey,
         }
-    else
+    elseif firstKeyType == "string" then
         local keys = {}
         for key, _ in pairs(tbl) do
             if (type(key) ~= "string") then
-                errorf("encountered non-string key in object-like table: '%s' with type '%s'", key, type(key))
+                errorf("encountered non-string key in object-like table: '%s' with type '%s'", tostring(key), type(key))
             end
             insert(keys, key)
         end
@@ -490,6 +491,13 @@ analyzeTableKeys = function(tbl)
             tableType = TABLE_TYPE_OBJECT,
             keys = keys,
         }
+    elseif (firstKey == nil) then
+        return {
+            tableType = TABLE_TYPE_ARRAY,
+            maxNumericalKey = 0,
+        }
+    else
+        errorf("encountered unsupported key type: '%s' with type '%s'", tostring(firstKey), firstKeyType)
     end
 end
 
