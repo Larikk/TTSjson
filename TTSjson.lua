@@ -476,34 +476,23 @@ local characterToEscapedSubstitution = {
 writeString = function(ctx, str)
     ctx.append("\"")
 
-    -- Check if any characters require any escaping (a lot of strings do not)
-    -- Strings which do not require any escaping can be passed directly into the json
-    local firstCharacterIndexRequiringEscaping = -1
+    -- A segment is a part of a string which does not require any escaping
+    local lastSegmentStart = 1
     for i = 1, #str do
         local codepoint = unicode(str, i)
-        if codepoint > 0x7F or characterToEscapedSubstitution[codepoint] then
-            firstCharacterIndexRequiringEscaping = i
-            break
+        local substitution = characterToEscapedSubstitution[codepoint]
+        if (substitution) then
+            ctx.append(substring(str, lastSegmentStart, i-1))
+            lastSegmentStart = i + 1
+            ctx.append(substitution)
+        elseif (codepoint > 0x7F) then
+            ctx.append(substring(str, lastSegmentStart, i-1))
+            lastSegmentStart = i + 1
+            ctx.append(format("\\u%04X", codepoint))
         end
     end
 
-    if (firstCharacterIndexRequiringEscaping == -1) then
-        ctx.append(str)
-    else
-        ctx.append(substring(str, 1, firstCharacterIndexRequiringEscaping - 1))
-        for i = firstCharacterIndexRequiringEscaping, #str do
-            local codepoint = unicode(str, i)
-            local substitution = characterToEscapedSubstitution[codepoint]
-            if substitution ~= nil then
-                ctx.append(substitution)
-            elseif codepoint > 0x7F then
-                ctx.append(format("\\u%04X", codepoint))
-            else
-                ctx.append(tochar(codepoint))
-            end
-        end
-    end
-
+    ctx.append(substring(str, lastSegmentStart, #str))
     ctx.append("\"")
 end
 
