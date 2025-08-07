@@ -484,10 +484,6 @@ writeString = function(ctx, str)
             ctx.append(substring(str, lastSegmentStart, i-1))
             lastSegmentStart = i + 1
             ctx.append(substitution)
-        elseif (codepoint > 0x7F) then
-            ctx.append(substring(str, lastSegmentStart, i-1))
-            lastSegmentStart = i + 1
-            ctx.append(format("\\u%04X", codepoint))
         end
     end
 

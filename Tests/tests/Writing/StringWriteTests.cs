@@ -66,16 +66,16 @@ public class StringWriteTests
     }
 
     [Theory]
-    [InlineData("€", "\\u20AC")]
-    [InlineData("Īካ", "\\u012A\\u12AB")]
-    [InlineData("𐐷", "\\uD801\\uDC37")]
-    [InlineData("😹💍", "\\uD83D\\uDE39\\uD83D\\uDC8D")]
-    public void ShouldEscapeNonAsciiCharacters(string character, string expectedEscapedForm)
+    [InlineData("€")]
+    [InlineData("Īካ")]
+    [InlineData("𐐷")]
+    [InlineData("😹💍")]
+    public void ShouldWriteNonAsciiCharacters(string character)
     {
-        ttsjson.Write(character).Should().BeEquivalentTo(Q(expectedEscapedForm));
-        ttsjson.Write(character + "foo").Should().BeEquivalentTo(Q(expectedEscapedForm + "foo"));
-        ttsjson.Write("foo" + character + "bar").Should().BeEquivalentTo(Q("foo" + expectedEscapedForm + "bar"));
-        ttsjson.Write("foo" + character).Should().BeEquivalentTo(Q("foo" + expectedEscapedForm));
+        ttsjson.Write(character).Should().BeEquivalentTo(Q(character));
+        ttsjson.Write(character + "foo").Should().BeEquivalentTo(Q(character + "foo"));
+        ttsjson.Write("foo" + character + "bar").Should().BeEquivalentTo(Q("foo" + character + "bar"));
+        ttsjson.Write("foo" + character).Should().BeEquivalentTo(Q("foo" + character));
     }
 
     private static string Q(string s)
