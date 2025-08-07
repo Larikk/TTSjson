@@ -30,6 +30,15 @@ public class StringWriteTests
         actual.Should().BeEquivalentTo(expected);
     }
 
+
+    [Fact]
+    public void ShouldEscapeNewLineInText()
+    {
+        var actual = ttsjson.Write("foo\nbar");
+        var expected = Q("foo\\nbar");
+        actual.Should().BeEquivalentTo(expected);
+    }
+
     [Theory]
     [InlineData("\"", "\\\"")]
     [InlineData("\\", "\\\\")]
