@@ -556,19 +556,18 @@ writeValue = function(ctx, value)
 end
 
 writeJson = function(value)
+    local stringBuilder = {}
+    local stringBuilderNextIndex = 1
     local ctx = {}
-    ctx.sb = {} --stringBuilder
-    ctx.sbPos = 1
     ctx.encounteredTables = {}
     ctx.append = function(element)
-        ctx.sb[ctx.sbPos] = element
-        ctx.sbPos = ctx.sbPos + 1
-        return ctx
+        stringBuilder[stringBuilderNextIndex] = element
+        stringBuilderNextIndex = stringBuilderNextIndex + 1
     end
 
     writeValue(ctx, value)
 
-    local json = concat(ctx.sb)
+    local json = concat(stringBuilder)
     return json
 end
 
