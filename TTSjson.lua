@@ -409,10 +409,6 @@ end
 
 -- #region writing
 
-local TABLE_TYPE_ARRAY = 1
-local TABLE_TYPE_OBJECT = 2
-
-local analyzeTableKeys
 local writeNil
 local writeBoolean
 local writeNumber
@@ -494,76 +490,50 @@ writeString = function(ctx, str)
     ctx.append("\"")
 end
 
-analyzeTableKeys = function(tbl)
-    local firstKey = next(tbl)
-    local firstKeyType = type(firstKey)
-
-    if (firstKeyType == "number") then
-        local maxNumericalKey = 0
-        for key, _ in pairs(tbl) do
-            if (type(key) ~= "number") then
-                errorf("encountered non-numerical key in array-like table: '%s' with type '%s'", tostring(key), type(key))
-            end
-            maxNumericalKey = mathmax(maxNumericalKey, key)
-        end
-        return {
-            tableType = TABLE_TYPE_ARRAY,
-            maxNumericalKey = maxNumericalKey,
-        }
-    elseif firstKeyType == "string" then
-        local keys = {}
-        for key, _ in pairs(tbl) do
-            if (type(key) ~= "string") then
-                errorf("encountered non-string key in object-like table: '%s' with type '%s'", tostring(key), type(key))
-            end
-            insert(keys, key)
-        end
-        return {
-            tableType = TABLE_TYPE_OBJECT,
-            keys = keys,
-        }
-    elseif (firstKey == nil) then
-        return {
-            tableType = TABLE_TYPE_ARRAY,
-            maxNumericalKey = 0,
-        }
-    else
-        errorf("encountered unsupported key type: '%s' with type '%s'", tostring(firstKey), firstKeyType)
-    end
-end
-
 writeTable = function(ctx, tbl)
     if (ctx.encounteredTables[tbl]) then
         errorf("detected a cycle between tables, aborting serialization")
     end
     ctx.encounteredTables[tbl] = true
 
-    local analysis = analyzeTableKeys(tbl)
-    if analysis.tableType == TABLE_TYPE_ARRAY then
+    local firstKey, firstValue = next(tbl)
+    local firstKeyType = type(firstKey)
+
+    if firstKeyType == "number" then
+        local maxNumericalKey = 0
+        for key, _ in pairs(tbl) do
+            if (type(key) ~= "number") then errorf("encountered non-numerical key in array-like table: '%s' with type '%s'", tostring(key), type(key)) end
+            maxNumericalKey = mathmax(maxNumericalKey, key)
+        end
+
         ctx.append("[")
-        if analysis.maxNumericalKey >= 1 then
+        if maxNumericalKey >= 1 then
             writeValue(ctx, tbl[1])
-            for i = 2, analysis.maxNumericalKey do
+            for i = 2, maxNumericalKey do
                 ctx.append(",")
                 writeValue(ctx, tbl[i])
             end
         end
         ctx.append("]")
-    else
+    elseif firstKeyType == "string" then
         ctx.append("{")
-        local keys = analysis.keys
-        if #keys > 0 then
-            writeString(ctx, keys[1])
+        writeString(ctx, firstKey)
+        ctx.append(":")
+        writeValue(ctx, firstValue)
+        local key, value = next(tbl, firstKey)
+        while key do
+            if (type(key) ~= "string") then errorf("encountered non-string key in object-like table: '%s' with type '%s'", tostring(key), type(key)) end
+            ctx.append(",")
+            writeString(ctx, key)
             ctx.append(":")
-            writeValue(ctx, tbl[keys[1]])
-            for i = 2, #keys do
-                ctx.append(",")
-                writeString(ctx, keys[i])
-                ctx.append(":")
-                writeValue(ctx, tbl[keys[i]])
-            end
+            writeValue(ctx, value)
+            key, value = next(tbl, key)
         end
         ctx.append("}")
+    elseif firstKey == nil then
+        ctx.append("[]")
+    else
+        errorf("encountered unsupported key type: '%s' with type '%s'", tostring(firstKey), firstKeyType)
     end
 end
 
