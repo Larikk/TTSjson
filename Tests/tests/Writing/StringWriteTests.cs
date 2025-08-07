@@ -30,16 +30,24 @@ public class StringWriteTests
         actual.Should().BeEquivalentTo(expected);
     }
 
+
+    [Fact]
+    public void ShouldEscapeNewLineInText()
+    {
+        var actual = ttsjson.Write("foo\nbar");
+        var expected = Q("foo\\nbar");
+        actual.Should().BeEquivalentTo(expected);
+    }
+
     [Theory]
     [InlineData("\"", "\\\"")]
     [InlineData("\\", "\\\\")]
-    [InlineData("/", "\\/")]
     [InlineData("\n", "\\n")]
     [InlineData("\r", "\\r")]
     [InlineData("\t", "\\t")]
     [InlineData("\b", "\\b")]
     [InlineData("\f", "\\f")]
-    [InlineData("\"\\/\n\r\t\b\f", "\\\"\\\\\\/\\n\\r\\t\\b\\f")]
+    [InlineData("\"\\\n\r\t\b\f", "\\\"\\\\\\n\\r\\t\\b\\f")]
     public void ShouldEscapeCharacterWhenNecessary(string character, string expectedEscapedForm)
     {
         ttsjson.Write(character).Should().BeEquivalentTo(Q(expectedEscapedForm));
@@ -58,16 +66,20 @@ public class StringWriteTests
     }
 
     [Theory]
-    [InlineData("€", "\\u20AC")]
-    [InlineData("Īካ", "\\u012A\\u12AB")]
-    [InlineData("𐐷", "\\uD801\\uDC37")]
-    [InlineData("😹💍", "\\uD83D\\uDE39\\uD83D\\uDC8D")]
-    public void ShouldEscapeNonAsciiCharacters(string character, string expectedEscapedForm)
+    [InlineData("€")]
+    [InlineData("Īካ")]
+    [InlineData("𐐷")]
+    [InlineData("😹💍")]
+    // The following characters second byte is equal to the ASCII values of characters that needs to be escaped. The character should remain as is
+    [InlineData("Ģ")] // Second byte equal to ASCII value of double quote
+    [InlineData("Ŝ")] // Second byte equal to ASCII value of backslash
+    [InlineData("Ċ")] // Second byte equal to ASCII value of line feed
+    public void ShouldWriteNonAsciiCharacters(string character)
     {
-        ttsjson.Write(character).Should().BeEquivalentTo(Q(expectedEscapedForm));
-        ttsjson.Write(character + "foo").Should().BeEquivalentTo(Q(expectedEscapedForm + "foo"));
-        ttsjson.Write("foo" + character + "bar").Should().BeEquivalentTo(Q("foo" + expectedEscapedForm + "bar"));
-        ttsjson.Write("foo" + character).Should().BeEquivalentTo(Q("foo" + expectedEscapedForm));
+        ttsjson.Write(character).Should().BeEquivalentTo(Q(character));
+        ttsjson.Write(character + "foo").Should().BeEquivalentTo(Q(character + "foo"));
+        ttsjson.Write("foo" + character + "bar").Should().BeEquivalentTo(Q("foo" + character + "bar"));
+        ttsjson.Write("foo" + character).Should().BeEquivalentTo(Q("foo" + character));
     }
 
     private static string Q(string s)
