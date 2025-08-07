@@ -70,6 +70,10 @@ public class StringWriteTests
     [InlineData("Īካ")]
     [InlineData("𐐷")]
     [InlineData("😹💍")]
+    // The following characters second byte is equal to the ASCII values of characters that needs to be escaped. The character should remain as is
+    [InlineData("Ģ")] // Second byte equal to ASCII value of double quote
+    [InlineData("Ŝ")] // Second byte equal to ASCII value of backslash
+    [InlineData("Ċ")] // Second byte equal to ASCII value of line feed
     public void ShouldWriteNonAsciiCharacters(string character)
     {
         ttsjson.Write(character).Should().BeEquivalentTo(Q(character));

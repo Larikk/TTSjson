@@ -7,6 +7,7 @@ local type = type
 local pairs = pairs
 local tochar = string.char
 local substring = string.sub
+local gsub = string.gsub
 local concat = table.concat
 local insert = table.insert
 local tonumber = tonumber
@@ -472,22 +473,24 @@ local characterToEscapedSubstitution = {
     [ASCII_BACKSLASH] = "\\\\",
 }
 
+-- pattern matches constrol characters (0x00-0x1F and 0x7F), double quote and backslash
+local patternForAsciiCharactersRequiringEscaping = '[%c"\\]'
+local characterEscapingFunction = function(c)
+    local codepoint = unicode(c, 1)
+    -- Two-byte charaters whose second byte equals the ASCII value of a character that needs to be escaped are wrongfully picked up by gsub
+    -- Example: U+0122, 0x22 equals double quotes
+    -- Therefore we do not manipulate any characters whose codepoint is over 0x7F
+    if (codepoint > 0x7F) then
+        return c
+    else
+        return characterToEscapedSubstitution[codepoint]
+    end
+end
+
 writeString = function(ctx, str)
     ctx.append("\"")
-
-    -- A segment is a part of a string which does not require any escaping
-    local lastSegmentStart = 1
-    for i = 1, #str do
-        local codepoint = unicode(str, i)
-        local substitution = characterToEscapedSubstitution[codepoint]
-        if (substitution) then
-            ctx.append(substring(str, lastSegmentStart, i-1))
-            lastSegmentStart = i + 1
-            ctx.append(substitution)
-        end
-    end
-
-    ctx.append(substring(str, lastSegmentStart, #str))
+    local escapedString = gsub(str, patternForAsciiCharactersRequiringEscaping, characterEscapingFunction)
+    ctx.append(escapedString)
     ctx.append("\"")
 end
 
