@@ -373,7 +373,7 @@ parseJson = function(str)
     ctx.nextCodepoint = function()
         if ctx.currentCodepoint == nil then error("json is not terminated properly") end
         ctx.pos = ctx.pos + 1
-        ctx.currentCodepoint = unicode(ctx.buffer, ctx.pos)
+        ctx.currentCodepoint = unicode(str, ctx.pos)
         return ctx.currentCodepoint
     end
     ctx.setPosition = function(pos)
