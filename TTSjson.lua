@@ -145,8 +145,9 @@ local parseArray
 local parseJson
 
 parseTrue = function(ctx)
-    local endpos = ctx.pos + 3
-    local token = substring(ctx.buffer, ctx.pos, endpos)
+    local startpos = ctx.get
+    local endpos = startpos + 3
+    local token = substring(ctx.buffer, startpos, endpos)
     if token ~= "true" then
         errorf("expected true, got '%s'", token)
     end
@@ -155,8 +156,9 @@ parseTrue = function(ctx)
 end
 
 parseFalse = function(ctx)
-    local endpos = ctx.pos + 4
-    local token = substring(ctx.buffer, ctx.pos, endpos)
+    local startpos = ctx.pos
+    local endpos = startpos + 4
+    local token = substring(ctx.buffer, startpos, endpos)
     if token ~= "false" then
         errorf("expected false, got '%s'", token)
     end
@@ -165,8 +167,9 @@ parseFalse = function(ctx)
 end
 
 parseNull = function(ctx)
-    local endpos = ctx.pos + 3
-    local token = substring(ctx.buffer, ctx.pos, endpos)
+    local startpos = ctx.pos
+    local endpos = startpos + 3
+    local token = substring(ctx.buffer, startpos, endpos)
     if token ~= "null" then
         errorf("expected null, got '%s'", token)
     end
