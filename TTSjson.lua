@@ -274,7 +274,6 @@ parseObject = function(ctx)
 
     if ctx.currentCodepoint == ASCII_CLOSING_CURLY_BRACE then
         ctx.nextCodepoint()
-        ctx.skipWhiteSpace()
         return {}
     end
 
@@ -296,7 +295,6 @@ parseObject = function(ctx)
             ctx.skipWhiteSpace()
         elseif ctx.currentCodepoint == ASCII_CLOSING_CURLY_BRACE then
             ctx.nextCodepoint()
-            ctx.skipWhiteSpace()
             return obj
         else
             errorf("expected ',' or '}' after object value, got '%s'", ctx.currentChar())
@@ -312,7 +310,6 @@ parseArray = function(ctx)
 
     if ctx.currentCodepoint == ASCII_CLOSING_SQUARE_BRACKET then
         ctx.nextCodepoint()
-        ctx.skipWhiteSpace()
         return {}
     end
 
@@ -328,7 +325,6 @@ parseArray = function(ctx)
             ctx.skipWhiteSpace()
         elseif ctx.currentCodepoint == ASCII_CLOSING_SQUARE_BRACKET then
             ctx.nextCodepoint()
-            ctx.skipWhiteSpace()
             return tbl
         else
             errorf("expected ',' or ']' after array value, got '%s'", ctx.currentChar())
