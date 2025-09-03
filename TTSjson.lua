@@ -7,6 +7,7 @@ local type = type
 local pairs = pairs
 local tochar = string.char
 local substring = string.sub
+local gsub = string.gsub
 local concat = table.concat
 local insert = table.insert
 local tonumber = tonumber
@@ -408,10 +409,6 @@ end
 
 -- #region writing
 
-local TABLE_TYPE_ARRAY = 1
-local TABLE_TYPE_OBJECT = 2
-
-local analyzeTableKeys
 local writeNil
 local writeBoolean
 local writeNumber
@@ -435,70 +432,62 @@ writeNumber = function(ctx, value)
 end
 
 local characterToEscapedSubstitution = {
+    [0x00] = "\\u0000",
+    [0x01] = "\\u0001",
+    [0x02] = "\\u0002",
+    [0x03] = "\\u0003",
+    [0x04] = "\\u0004",
+    [0x05] = "\\u0005",
+    [0x06] = "\\u0006",
+    [0x07] = "\\u0007",
+    [0x08] = "\\b",
+    [0x09] = "\\t",
+    [0x0A] = "\\n",
+    [0x0B] = "\\u000B",
+    [0x0C] = "\\f",
+    [0x0D] = "\\r",
+    [0x0E] = "\\u000E",
+    [0x0F] = "\\u000F",
+    [0x10] = "\\u0010",
+    [0x11] = "\\u0011",
+    [0x12] = "\\u0012",
+    [0x13] = "\\u0013",
+    [0x14] = "\\u0014",
+    [0x15] = "\\u0015",
+    [0x16] = "\\u0016",
+    [0x17] = "\\u0017",
+    [0x18] = "\\u0018",
+    [0x19] = "\\u0019",
+    [0x1A] = "\\u001A",
+    [0x1B] = "\\u001B",
+    [0x1C] = "\\u001C",
+    [0x1D] = "\\u001D",
+    [0x1E] = "\\u001E",
+    [0x1F] = "\\u001F",
+    [0x7F] = "\\u007F",
     [ASCII_DOUBLE_QUOTE] = "\\\"",
     [ASCII_BACKSLASH] = "\\\\",
-    [ASCII_FORWARDSLASH] = "\\/",
-    [ASCII_LINE_FEED] = "\\n",
-    [ASCII_CARRIAGE_RETURN] = "\\r",
-    [ASCII_HORIZONTAL_TAB] = "\\t",
-    [ASCII_BACKSPACE] = "\\b",
-    [ASCII_FORM_FEED] = "\\f",
 }
+
+-- pattern matches constrol characters (0x00-0x1F and 0x7F), double quote and backslash
+local patternForAsciiCharactersRequiringEscaping = '[%c"\\]'
+local characterEscapingFunction = function(c)
+    local codepoint = unicode(c, 1)
+    -- Two-byte charaters whose second byte equals the ASCII value of a character that needs to be escaped are wrongfully picked up by gsub
+    -- Example: U+0122, 0x22 equals double quotes
+    -- Therefore we do not manipulate any characters whose codepoint is over 0x7F
+    if (codepoint > 0x7F) then
+        return c
+    else
+        return characterToEscapedSubstitution[codepoint]
+    end
+end
 
 writeString = function(ctx, str)
     ctx.append("\"")
-
-    for i = 1, #str do
-        local codepoint = unicode(str, i)
-        local substitution = characterToEscapedSubstitution[codepoint]
-        if substitution ~= nil then
-            ctx.append(substitution)
-        elseif codepoint >= 0x7F or codepoint <= 0x1F then
-            ctx.append(format("\\u%04X", codepoint))
-        else
-            ctx.append(tochar(codepoint))
-        end
-    end
-
+    local escapedString = gsub(str, patternForAsciiCharactersRequiringEscaping, characterEscapingFunction)
+    ctx.append(escapedString)
     ctx.append("\"")
-end
-
-analyzeTableKeys = function(tbl)
-    local firstKey = next(tbl)
-    local firstKeyType = type(firstKey)
-
-    if (firstKeyType == "number") then
-        local maxNumericalKey = 0
-        for key, _ in pairs(tbl) do
-            if (type(key) ~= "number") then
-                errorf("encountered non-numerical key in array-like table: '%s' with type '%s'", tostring(key), type(key))
-            end
-            maxNumericalKey = mathmax(maxNumericalKey, key)
-        end
-        return {
-            tableType = TABLE_TYPE_ARRAY,
-            maxNumericalKey = maxNumericalKey,
-        }
-    elseif firstKeyType == "string" then
-        local keys = {}
-        for key, _ in pairs(tbl) do
-            if (type(key) ~= "string") then
-                errorf("encountered non-string key in object-like table: '%s' with type '%s'", tostring(key), type(key))
-            end
-            insert(keys, key)
-        end
-        return {
-            tableType = TABLE_TYPE_OBJECT,
-            keys = keys,
-        }
-    elseif (firstKey == nil) then
-        return {
-            tableType = TABLE_TYPE_ARRAY,
-            maxNumericalKey = 0,
-        }
-    else
-        errorf("encountered unsupported key type: '%s' with type '%s'", tostring(firstKey), firstKeyType)
-    end
 end
 
 writeTable = function(ctx, tbl)
@@ -507,32 +496,44 @@ writeTable = function(ctx, tbl)
     end
     ctx.encounteredTables[tbl] = true
 
-    local analysis = analyzeTableKeys(tbl)
-    if analysis.tableType == TABLE_TYPE_ARRAY then
+    local firstKey, firstValue = next(tbl)
+    local firstKeyType = type(firstKey)
+
+    if firstKeyType == "number" then
+        local maxNumericalKey = 0
+        for key, _ in pairs(tbl) do
+            if (type(key) ~= "number") then errorf("encountered non-numerical key in array-like table: '%s' with type '%s'", tostring(key), type(key)) end
+            maxNumericalKey = mathmax(maxNumericalKey, key)
+        end
+
         ctx.append("[")
-        if analysis.maxNumericalKey >= 1 then
+        if maxNumericalKey >= 1 then
             writeValue(ctx, tbl[1])
-            for i = 2, analysis.maxNumericalKey do
+            for i = 2, maxNumericalKey do
                 ctx.append(",")
                 writeValue(ctx, tbl[i])
             end
         end
         ctx.append("]")
-    else
+    elseif firstKeyType == "string" then
         ctx.append("{")
-        local keys = analysis.keys
-        if #keys > 0 then
-            writeString(ctx, keys[1])
+        writeString(ctx, firstKey)
+        ctx.append(":")
+        writeValue(ctx, firstValue)
+        local key, value = next(tbl, firstKey)
+        while key do
+            if (type(key) ~= "string") then errorf("encountered non-string key in object-like table: '%s' with type '%s'", tostring(key), type(key)) end
+            ctx.append(",")
+            writeString(ctx, key)
             ctx.append(":")
-            writeValue(ctx, tbl[keys[1]])
-            for i = 2, #keys do
-                ctx.append(",")
-                writeString(ctx, keys[i])
-                ctx.append(":")
-                writeValue(ctx, tbl[keys[i]])
-            end
+            writeValue(ctx, value)
+            key, value = next(tbl, key)
         end
         ctx.append("}")
+    elseif firstKey == nil then
+        ctx.append("[]")
+    else
+        errorf("encountered unsupported key type: '%s' with type '%s'", tostring(firstKey), firstKeyType)
     end
 end
 
@@ -555,19 +556,18 @@ writeValue = function(ctx, value)
 end
 
 writeJson = function(value)
+    local stringBuilder = {}
+    local stringBuilderNextIndex = 1
     local ctx = {}
-    ctx.sb = {} --stringBuilder
-    ctx.sbPos = 1
     ctx.encounteredTables = {}
     ctx.append = function(element)
-        ctx.sb[ctx.sbPos] = element
-        ctx.sbPos = ctx.sbPos + 1
-        return ctx
+        stringBuilder[stringBuilderNextIndex] = element
+        stringBuilderNextIndex = stringBuilderNextIndex + 1
     end
 
     writeValue(ctx, value)
 
-    local json = concat(ctx.sb)
+    local json = concat(stringBuilder)
     return json
 end
 
