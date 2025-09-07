@@ -145,7 +145,7 @@ local parseArray
 local parseJson
 
 parseTrue = function(ctx)
-    local startpos = ctx.get
+    local startpos = ctx.pos
     local endpos = startpos + 3
     local token = substring(ctx.buffer, startpos, endpos)
     if token ~= "true" then
