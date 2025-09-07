@@ -145,8 +145,9 @@ local parseArray
 local parseJson
 
 parseTrue = function(ctx)
-    local endpos = ctx.pos + 3
-    local token = substring(ctx.buffer, ctx.pos, endpos)
+    local startpos = ctx.pos
+    local endpos = startpos + 3
+    local token = substring(ctx.buffer, startpos, endpos)
     if token ~= "true" then
         errorf("expected true, got '%s'", token)
     end
@@ -155,8 +156,9 @@ parseTrue = function(ctx)
 end
 
 parseFalse = function(ctx)
-    local endpos = ctx.pos + 4
-    local token = substring(ctx.buffer, ctx.pos, endpos)
+    local startpos = ctx.pos
+    local endpos = startpos + 4
+    local token = substring(ctx.buffer, startpos, endpos)
     if token ~= "false" then
         errorf("expected false, got '%s'", token)
     end
@@ -165,8 +167,9 @@ parseFalse = function(ctx)
 end
 
 parseNull = function(ctx)
-    local endpos = ctx.pos + 3
-    local token = substring(ctx.buffer, ctx.pos, endpos)
+    local startpos = ctx.pos
+    local endpos = startpos + 3
+    local token = substring(ctx.buffer, startpos, endpos)
     if token ~= "null" then
         errorf("expected null, got '%s'", token)
     end
@@ -274,7 +277,6 @@ parseObject = function(ctx)
 
     if ctx.currentCodepoint == ASCII_CLOSING_CURLY_BRACE then
         ctx.nextCodepoint()
-        ctx.skipWhiteSpace()
         return {}
     end
 
@@ -296,7 +298,6 @@ parseObject = function(ctx)
             ctx.skipWhiteSpace()
         elseif ctx.currentCodepoint == ASCII_CLOSING_CURLY_BRACE then
             ctx.nextCodepoint()
-            ctx.skipWhiteSpace()
             return obj
         else
             errorf("expected ',' or '}' after object value, got '%s'", ctx.currentChar())
@@ -312,7 +313,6 @@ parseArray = function(ctx)
 
     if ctx.currentCodepoint == ASCII_CLOSING_SQUARE_BRACKET then
         ctx.nextCodepoint()
-        ctx.skipWhiteSpace()
         return {}
     end
 
@@ -328,7 +328,6 @@ parseArray = function(ctx)
             ctx.skipWhiteSpace()
         elseif ctx.currentCodepoint == ASCII_CLOSING_SQUARE_BRACKET then
             ctx.nextCodepoint()
-            ctx.skipWhiteSpace()
             return tbl
         else
             errorf("expected ',' or ']' after array value, got '%s'", ctx.currentChar())
@@ -377,7 +376,7 @@ parseJson = function(str)
     ctx.nextCodepoint = function()
         if ctx.currentCodepoint == nil then error("json is not terminated properly") end
         ctx.pos = ctx.pos + 1
-        ctx.currentCodepoint = unicode(ctx.buffer, ctx.pos)
+        ctx.currentCodepoint = unicode(str, ctx.pos)
         return ctx.currentCodepoint
     end
     ctx.setPosition = function(pos)
